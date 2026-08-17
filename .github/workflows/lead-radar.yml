@@ -1,0 +1,107 @@
+name: Lead Radarı
+
+# Zamanlanmis lead arastirmasi.
+#
+# Her sabah calisir: yeni isletmeleri kesfeder, sitelerini denetler, puanlar ve
+# "bugun ne degisti" raporunu depoya isler.
+#
+# Bu is akisi HICBIR isletmeye mesaj gondermez, e-posta atmaz, disari veri
+# yazmaz. Yalnizca herkese acik sayfalari okur ve sonucu bu depoya kaydeder.
+
+on:
+  schedule:
+    # Her gun 06:00 UTC = Turkiye saatiyle 09:00
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Kaç lead işlensin'
+        required: false
+        default: '100'
+      source:
+        description: 'Kaynak: osm | places'
+        required: false
+        default: 'osm'
+
+concurrency:
+  # Ayni anda iki calistirma olmasin — ikisi de veritabanina yazar.
+  group: lead-radar
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    permissions:
+      # Raporu depoya islemek icin gerekli. Baska hicbir yetki istenmiyor.
+      contents: write
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Testleri çalıştır
+        # Bozuk bir skorlama mantigiyla rapor uretmeyelim.
+        run: npm test
+
+      - name: Pipeline
+        env:
+          # Bu gizli anahtarlar tanimli degilse sistem yine calisir:
+          # PageSpeed yerine yerel performans olcumu, Places yerine OSM kullanilir.
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+        run: |
+          npm run db:init
+          npm run pipeline -- \
+            --limit "${{ github.event.inputs.limit || '100' }}" \
+            --city istanbul \
+            --source "${{ github.event.inputs.source || 'osm' }}" \
+            --concurrency 5 \
+            --quiet
+
+      - name: Rapor üret
+        run: npm run report
+
+      - name: Raporu depoya işle
+        run: |
+          git config user.name  "lead-radar[bot]"
+          git config user.email "lead-radar[bot]@users.noreply.github.com"
+          git add reports/
+          if git diff --cached --quiet; then
+            echo "Değişiklik yok, commit atlanıyor."
+            exit 0
+          fi
+          git commit -m "Lead radarı raporu: $(date -u +%Y-%m-%d)"
+          # Bu sirada dala baska bir push olduysa uzerine yazma — birlestir.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Raporu iş özetine yaz
+        if: always()
+        run: |
+          if [ -f reports/latest.md ]; then
+            cat reports/latest.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Rapor üretilemedi." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Veritabanını artefakt olarak sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: viva-db-${{ github.run_number }}
+          path: data/viva.db
+          retention-days: 14
+          if-no-files-found: warn

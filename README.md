@@ -103,6 +103,24 @@ npm run pipeline -- --limit 100 --city istanbul --concurrency 5
 | `--concurrency N` | Eş zamanlı website denetimi (1–12, varsayılan 4). Her lead farklı bir alan adına gittiği için tek siteyi yormaz. |
 | `--quiet` | Lead başına gerekçe çıktısını susturur (25+ lead'de otomatik) |
 
+## Otomatik çalışma
+
+`.github/workflows/lead-radar.yml` her sabah 09:00'da (TR saati) çalışır:
+yeni işletmeleri keşfeder, sitelerini denetler, puanlar ve **"bugün ne değişti"**
+raporunu `reports/latest.md` dosyasına işler.
+
+Rapor şunları içerir: aranacak listeye yeni giren leadler, yeni keşfedilen
+işletmeler, skoru belirgin değişenler ve güncel aranacak liste. Değişimi bir
+önceki çalıştırmanın anlık görüntüsüyle karşılaştırarak bulur — tam listeyi her
+gün baştan okumaya gerek kalmaz.
+
+GitHub'da **Actions** sekmesinden elle de tetiklenebilir (lead sayısı ve kaynak
+seçilebilir). Rapor iş özetinde de görünür.
+
+API anahtarları depo ayarlarından **Settings → Secrets and variables → Actions**
+altına eklenebilir (`PAGESPEED_API_KEY`, `GOOGLE_MAPS_API_KEY`, `ANTHROPIC_API_KEY`).
+Hiçbiri tanımlı değilse iş akışı yine çalışır — OSM ve yerel ölçümlerle.
+
 ## Teknoloji
 
 Next.js 15 · TypeScript · Tailwind v4 · better-sqlite3 · tsx · node:test

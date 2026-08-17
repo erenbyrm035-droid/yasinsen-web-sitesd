@@ -1,0 +1,1012 @@
+{
+  "generatedAt": "2026-08-17T18:11:03.682Z",
+  "stats": {
+    "totalLeads": 100,
+    "analyzed": 100,
+    "hotLeads": 0,
+    "highPotential": 9,
+    "averageScore": 46
+  },
+  "leads": [
+    {
+      "id": 17,
+      "company": "En Fit Body",
+      "purchase": 74,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 18,
+      "company": "FitnessMax PT Studio",
+      "purchase": 74,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Çekmeköy, İstanbul"
+    },
+    {
+      "id": 3,
+      "company": "Luff Functional Fitness",
+      "purchase": 74,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 12,
+      "company": "Pilates Demet Topa",
+      "purchase": 72,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 41,
+      "company": "U Prime Training",
+      "purchase": 70,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Çekmeköy, İstanbul"
+    },
+    {
+      "id": 34,
+      "company": "Gum Gym",
+      "purchase": 69,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 7,
+      "company": "Proness CLUB Fitness Center",
+      "purchase": 69,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 11,
+      "company": "Sultan Osman Hamami",
+      "purchase": 69,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 9,
+      "company": "Ebru Karaduman Beden Atölyesi",
+      "purchase": 68,
+      "priority": "HIGH",
+      "offer": "Website",
+      "website": 40,
+      "social": 90,
+      "location": "Ataşehir, İstanbul"
+    },
+    {
+      "id": 30,
+      "company": "Cats Pilates",
+      "purchase": 64,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 59,
+      "social": 78,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 6,
+      "company": "Shape Club",
+      "purchase": 62,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 37,
+      "social": null,
+      "location": "Ataşehir, İstanbul"
+    },
+    {
+      "id": 8,
+      "company": "Health Club & Spa Soul",
+      "purchase": 61,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 37,
+      "social": null,
+      "location": "İstanbul, İstanbul"
+    },
+    {
+      "id": 1,
+      "company": "MACFit",
+      "purchase": 61,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 32,
+      "social": null,
+      "location": "Eyüpsultan, İstanbul"
+    },
+    {
+      "id": 4,
+      "company": "Basi Systems Pilates",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 95,
+      "company": "Body Line",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Zeytinburnu, İstanbul"
+    },
+    {
+      "id": 24,
+      "company": "Fitcity Capacity AVM",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 59,
+      "social": 85,
+      "location": "Bakırköy, İstanbul"
+    },
+    {
+      "id": 32,
+      "company": "Fitcity Marmara Forum AVM",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 58,
+      "social": 85,
+      "location": "Bakırköy, İstanbul"
+    },
+    {
+      "id": 37,
+      "company": "GYM NO.10",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 59,
+      "social": 56,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 62,
+      "company": "İÜ Coğrafya Stüdyo Kapalı Spor Salonu",
+      "purchase": 60,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 16,
+      "company": "MACFit",
+      "purchase": 59,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 31,
+      "social": null,
+      "location": "Bayrampaşa, İstanbul"
+    },
+    {
+      "id": 19,
+      "company": "USA Team Fitness & Fight Club",
+      "purchase": 59,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 47,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 97,
+      "company": "Eser Spor Kulübü",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Bağcılar, İstanbul"
+    },
+    {
+      "id": 39,
+      "company": "Fenerbahçe Cimnastik Okulu",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 38,
+      "social": 56,
+      "location": "Pendik, İstanbul"
+    },
+    {
+      "id": 93,
+      "company": "Ferdi Spor Kulübü",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Çerkezköy, İstanbul"
+    },
+    {
+      "id": 5,
+      "company": "Fit Slim",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 37,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 73,
+      "company": "Fitslim",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 14,
+      "company": "Flash Gym",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 38,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 65,
+      "company": "Olympic spor salonu",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 40,
+      "company": "Slimshape Kilo Kontrol Merkezi",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 53,
+      "social": 67,
+      "location": "İstanbul"
+    },
+    {
+      "id": 28,
+      "company": "b-fit",
+      "purchase": 58,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 52,
+      "social": 85,
+      "location": "Pendik, İstanbul"
+    },
+    {
+      "id": 13,
+      "company": "NOA Gym",
+      "purchase": 57,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 62,
+      "social": 67,
+      "location": "İstanbul"
+    },
+    {
+      "id": 22,
+      "company": "City's Pilates",
+      "purchase": 55,
+      "priority": "MEDIUM",
+      "offer": "Website + Automation",
+      "website": 77,
+      "social": 74,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 31,
+      "company": "Fitcity Beylikdüzü Safir Residence",
+      "purchase": 55,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 58,
+      "social": 85,
+      "location": "Esenyurt, İstanbul"
+    },
+    {
+      "id": 33,
+      "company": "Fitcity Forum İstanbul AVM",
+      "purchase": 55,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 58,
+      "social": 85,
+      "location": "Bayrampaşa, İstanbul"
+    },
+    {
+      "id": 20,
+      "company": "Sports Factory",
+      "purchase": 55,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 58,
+      "social": 90,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 21,
+      "company": "Hercules Fitness Center",
+      "purchase": 54,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 61,
+      "social": 56,
+      "location": "Pendik, İstanbul"
+    },
+    {
+      "id": 38,
+      "company": "Polgym Pilates Studio",
+      "purchase": 54,
+      "priority": "MEDIUM",
+      "offer": "Website + Automation",
+      "website": 81,
+      "social": 74,
+      "location": "Kartal, İstanbul"
+    },
+    {
+      "id": 23,
+      "company": "Atlantis Sport Club",
+      "purchase": 53,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 18,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 2,
+      "company": "CS-Club",
+      "purchase": 53,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 55,
+      "social": 67,
+      "location": "İstanbul"
+    },
+    {
+      "id": 10,
+      "company": "MACFit",
+      "purchase": 53,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 31,
+      "social": null,
+      "location": "Üsküdar, İstanbul"
+    },
+    {
+      "id": 15,
+      "company": "MACFit",
+      "purchase": 53,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 31,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 29,
+      "company": "Weekend Training Club",
+      "purchase": 53,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 68,
+      "social": 72,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 25,
+      "company": "MACFit",
+      "purchase": 50,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 30,
+      "social": null,
+      "location": "Ümraniye, İstanbul"
+    },
+    {
+      "id": 36,
+      "company": "MACFit",
+      "purchase": 50,
+      "priority": "MEDIUM",
+      "offer": "Website",
+      "website": 31,
+      "social": null,
+      "location": "Pendik, İstanbul"
+    },
+    {
+      "id": 35,
+      "company": "Nefis Hayat Yoga Stüdyosu",
+      "purchase": 50,
+      "priority": "MEDIUM",
+      "offer": "Website + Social Media",
+      "website": 71,
+      "social": 85,
+      "location": "İstanbul"
+    },
+    {
+      "id": 43,
+      "company": "Goranga Yoga Merkezi",
+      "purchase": 45,
+      "priority": "MEDIUM",
+      "offer": "Website + Automation",
+      "website": 74,
+      "social": 85,
+      "location": "İstanbul"
+    },
+    {
+      "id": 42,
+      "company": "Fashion Sport Center",
+      "purchase": 44,
+      "priority": "LOW",
+      "offer": "Website + Automation",
+      "website": 72,
+      "social": 85,
+      "location": "İstanbul"
+    },
+    {
+      "id": 27,
+      "company": "Maximus Functional Training",
+      "purchase": 44,
+      "priority": "LOW",
+      "offer": "Website + Automation",
+      "website": 81,
+      "social": 64,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 26,
+      "company": "Tevetoğlu Fitness",
+      "purchase": 40,
+      "priority": "LOW",
+      "offer": "Social Media",
+      "website": 57,
+      "social": null,
+      "location": "Pendik, İstanbul"
+    },
+    {
+      "id": 44,
+      "company": "Club Sporium",
+      "purchase": 39,
+      "priority": "LOW",
+      "offer": "Website + Social Media",
+      "website": 79,
+      "social": 85,
+      "location": "İstanbul"
+    },
+    {
+      "id": 83,
+      "company": "Lets Pilates",
+      "purchase": 39,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 88,
+      "company": "Pilates Stüdio",
+      "purchase": 39,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Kadıköy, İstanbul"
+    },
+    {
+      "id": 77,
+      "company": "City Sport Center",
+      "purchase": 37,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Üsküdar, İstanbul"
+    },
+    {
+      "id": 79,
+      "company": "Nuray Pilates",
+      "purchase": 37,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 76,
+      "company": "Fatih Pilates gym",
+      "purchase": 36,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 96,
+      "company": "Spor yaşam merkezi",
+      "purchase": 36,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Zeytinburnu, İstanbul"
+    },
+    {
+      "id": 94,
+      "company": "Stadyum",
+      "purchase": 36,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Zeytinburnu, İstanbul"
+    },
+    {
+      "id": 89,
+      "company": "Bayan Fitness",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 91,
+      "company": "Burgu Arjaan By Rotana Bodylines Pool and Fitness Center",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 49,
+      "company": "Champion Gym",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 48,
+      "company": "Dark Fitnes",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 92,
+      "company": "Değirmenci Spor Kulübü",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 80,
+      "company": "Dragos FitnessCity",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 53,
+      "company": "E2 Sports",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 86,
+      "company": "Easy Fit",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 52,
+      "company": "Fitness",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 50,
+      "company": "Fitnesspark Bahçelievler",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 85,
+      "company": "Free Life Fitness Spor Salonu",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 100,
+      "company": "Gympoint Profesyonel Spor Merkezi",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 46,
+      "company": "Hariom Yoga",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 81,
+      "company": "Lifetime Fitness Center",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 51,
+      "company": "MACFit",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 78,
+      "company": "Mavi Club Fitness",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 99,
+      "company": "Muscle World GYM",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 56,
+      "company": "Nefess Yoga",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 98,
+      "company": "Pleon",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 87,
+      "company": "Relax Fitness Spor",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 82,
+      "company": "Salon Alican Öncel",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 47,
+      "company": "Sport Universe Gym",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 84,
+      "company": "Yoga Academy",
+      "purchase": 35,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "İstanbul"
+    },
+    {
+      "id": 55,
+      "company": "Asta la vista",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 75,
+      "company": "Atlas spor salonu",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 67,
+      "company": "B fit",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 63,
+      "company": "Champion",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 64,
+      "company": "Club Sporıuum",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 59,
+      "company": "Extreme Body Fitness",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 61,
+      "company": "Fit Life",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 71,
+      "company": "Fitness World",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 45,
+      "company": "Fitness World GYM",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Bayrampaşa, İstanbul"
+    },
+    {
+      "id": 69,
+      "company": "Flamingo",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 70,
+      "company": "Flamingo GYM",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 72,
+      "company": "Hakkay Yağlı",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 57,
+      "company": "King Fitness Center",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 58,
+      "company": "Power Gym",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 60,
+      "company": "R-Form",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 74,
+      "company": "Sportwani",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 68,
+      "company": "Troy Gym",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 66,
+      "company": "Türktaş Sitesi",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    },
+    {
+      "id": 90,
+      "company": "Ulusal Spor Klübü",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Sultanbeyli, İstanbul"
+    },
+    {
+      "id": 54,
+      "company": "Xpower GYM",
+      "purchase": 34,
+      "priority": "LOW",
+      "offer": "No Offer",
+      "website": 0,
+      "social": null,
+      "location": "Fatih, İstanbul"
+    }
+  ]
+}
