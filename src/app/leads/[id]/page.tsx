@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getLeadDetail } from '@/lib/db/repositories/views';
 import { buildAnalysis } from '@/lib/ai/reasoner';
 import { PriorityBadge, ScoreCell, Section, NoData } from '../../components/ui';
+import { ManualSocialForm } from './ManualSocialForm';
 import type { SocialDataAvailability } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +27,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const detail = getLeadDetail(leadId);
   if (!detail) notFound();
 
-  const { company, contacts, websiteAudit, socialAudits, score, offer } = detail;
+  const { company, contacts, websiteAudit, socialAudits, manualInputs, score, offer } = detail;
+
+  // Form varsayilani: elle veri girilmis ilk platform, yoksa tespit edilen ilk
+  // platform, o da yoksa Instagram.
+  const defaultPlatform = manualInputs[0]?.platform ?? socialAudits[0]?.platform ?? 'instagram';
+  const defaultExisting = manualInputs[0] ?? null;
 
   // Deterministik gerekce sayfa render'inda uretilir (AI anahtari varsa Claude yazar).
   const analysis =
@@ -159,7 +165,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             ) : (
               <div className="space-y-5">
                 {socialAudits.map((s) => (
-                  <div key={s.id} className="rounded-lg border border-[#232b45] bg-[#0e1424] p-4">
+                  <div key={s.platform} className="rounded-lg border border-[#232b45] bg-[#0e1424] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <span className="font-medium capitalize">{s.platform}</span>
@@ -192,23 +198,91 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
                       />
                     </div>
 
-                    <div className="mt-3 border-t border-[#232b45] pt-3">
-                      <div className="mb-2 text-xs text-[#6b7592]">Ölçülemeyen alanlar:</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(Object.keys(DATA_LABELS) as (keyof SocialDataAvailability)[])
-                          .filter((k) => !s.dataAvailable[k])
-                          .map((k) => (
-                            <span
-                              key={k}
-                              className="rounded bg-[#161d33] px-2 py-0.5 text-xs text-[#6b7592] ring-1 ring-[#232b45]"
-                            >
-                              {DATA_LABELS[k]}
-                            </span>
+                    {s.manual && (
+                      <div className="mt-3 rounded-md border border-[#4ade80]/20 bg-[#4ade80]/5 p-3">
+                        <div className="mb-2 flex items-center justify-between text-xs">
+                          <span className="font-medium text-[#86efac]">
+                            Manuel veri · rubrik skoru {s.manual.score}/100
+                          </span>
+                          <span className="text-[#6b7592]">
+                            kapsam %{Math.round(s.manual.coverage * 100)}
+                          </span>
+                        </div>
+                        <ul className="space-y-1 text-xs">
+                          {s.manual.components.map((c) => (
+                            <li key={c.key} className="flex justify-between gap-3">
+                              <span className="text-[#b8c0d4]">{c.label}</span>
+                              <span className="text-right text-[#6b7592]">
+                                {c.detail} · {Math.round(c.value)}/100
+                              </span>
+                            </li>
                           ))}
+                        </ul>
                       </div>
-                    </div>
+                    )}
+
+                    {(() => {
+                      const missing = (Object.keys(DATA_LABELS) as (keyof SocialDataAvailability)[])
+                        .filter((k) => !s.dataAvailable[k]);
+                      if (missing.length === 0) {
+                        return (
+                          <div className="mt-3 border-t border-[#232b45] pt-3 text-xs text-[#86efac]">
+                            Tüm alanlar dolu — bu platform için tam rubrik uygulandı.
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="mt-3 border-t border-[#232b45] pt-3">
+                          <div className="mb-2 text-xs text-[#6b7592]">
+                            Ölçülemeyen alanlar (aşağıdaki formdan elle girilebilir):
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {missing.map((k) => (
+                              <span
+                                key={k}
+                                className="rounded bg-[#161d33] px-2 py-0.5 text-xs text-[#6b7592] ring-1 ring-[#232b45]"
+                              >
+                                {DATA_LABELS[k]}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
+              </div>
+            )}
+          </Section>
+
+          <Section
+            title="Manuel Sosyal Medya Girişi"
+            subtitle="Instagram login duvarı nedeniyle otomatik ölçülemeyen metrikler — girilince lead anında yeniden skorlanır"
+          >
+            <ManualSocialForm
+              companyId={company.id}
+              leadId={detail.leadId}
+              platform={defaultPlatform}
+              existing={defaultExisting}
+            />
+
+            {manualInputs.length > 1 && (
+              <div className="mt-5 border-t border-[#232b45] pt-4">
+                <div className="mb-2 text-xs text-[#8b94ad]">
+                  Bu şirket için girilmiş diğer platformlar:
+                </div>
+                <ul className="space-y-1 text-xs text-[#6b7592]">
+                  {manualInputs.slice(1).map((m) => (
+                    <li key={m.id}>
+                      <span className="capitalize text-[#b8c0d4]">{m.platform}</span>
+                      {m.followers !== null && ` · ${m.followers.toLocaleString('tr-TR')} takipçi`}
+                      {` · ${m.updatedAt}`}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-[#4a536b]">
+                  Düzenlemek için formdaki platformu değiştirip kaydedin.
+                </p>
               </div>
             )}
           </Section>

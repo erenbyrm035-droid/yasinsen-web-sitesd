@@ -119,7 +119,8 @@ describe('Purchase score', () => {
     assert.equal(result.breakdown.purchase.base, expected);
   });
 
-  test('hicbir iletisim kanali olmayan lead -10 ceza alir', () => {
+  // 100 lead'lik kalibrasyondan gelen davranis: ulasilamayan lead firsat degildir.
+  test('hicbir iletisim kanali olmayan lead ulasilabilirlik carpani yer', () => {
     const result = scoreFor({
       hasPhone: false,
       hasWebsite: false,
@@ -128,20 +129,50 @@ describe('Purchase score', () => {
       socialScore: null,
       socialConfidence: 'none',
     });
-    assert.equal(result.breakdown.purchase.modifiers.some((m) => m.key === 'noContactChannel'), true);
+    const modifier = result.breakdown.purchase.modifiers.find((m) => m.key === 'reachability');
+    assert.ok(modifier, 'reachability modifier bekleniyordu');
+    assert.ok(modifier.delta < 0, 'çarpan skoru düşürmeli');
+    assert.match(modifier.label, /×0\.55/);
   });
 
-  test('dijital varligi olmayan lead 60 tavanini asamaz', () => {
+  test('tek kanali olan lead daha hafif carpan yer', () => {
     const result = scoreFor({
-      segment: 'pilates_studio',
-      district: 'Beşiktaş',
+      hasPhone: true,
       hasWebsite: false,
       hasSocialPresence: false,
       websiteScore: 0,
       socialScore: null,
       socialConfidence: 'none',
     });
-    assert.ok(result.purchaseScore <= 60);
+    const modifier = result.breakdown.purchase.modifiers.find((m) => m.key === 'reachability');
+    assert.match(modifier?.label ?? '', /×0\.85/);
+  });
+
+  test('iki veya daha fazla kanali olan lead carpan yemez', () => {
+    const result = scoreFor({ hasPhone: true, hasWebsite: true, hasSocialPresence: false });
+    assert.equal(
+      result.breakdown.purchase.modifiers.some((m) => m.key === 'reachability'),
+      false,
+    );
+  });
+
+  test('ulasilamayan lead, ulasilabilir esdegerinden daima dusuk skorlanir', () => {
+    const common = {
+      segment: 'pilates_studio' as const,
+      district: 'Beşiktaş',
+      websiteScore: 0,
+      socialScore: null,
+      socialConfidence: 'none' as const,
+      hasWebsite: false,
+      hasSocialPresence: false,
+    };
+    const reachable = scoreFor({ ...common, hasPhone: true });
+    const unreachable = scoreFor({ ...common, hasPhone: false });
+
+    assert.ok(
+      unreachable.purchaseScore < reachable.purchaseScore,
+      `ulaşılamayan (${unreachable.purchaseScore}) < ulaşılabilir (${reachable.purchaseScore}) olmalı`,
+    );
   });
 
   test('skor daima 0-100 araliginda kalir', () => {

@@ -1,3 +1,7 @@
+import { loadEnv } from '../src/lib/env';
+
+loadEnv();
+
 import { initSchema, closeDb } from '../src/lib/db/client';
 import { upsertCompany, upsertContact } from '../src/lib/db/repositories/companies';
 import { ensureLead, setPrimaryContact } from '../src/lib/db/repositories/leads';

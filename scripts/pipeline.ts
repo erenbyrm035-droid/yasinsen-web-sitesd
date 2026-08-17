@@ -1,3 +1,7 @@
+import { loadEnv } from '../src/lib/env';
+
+loadEnv();
+
 import { initSchema, closeDb } from '../src/lib/db/client';
 import { startRun, finishRun } from '../src/lib/db/repositories/runs';
 import { runDiscover } from './discover';
@@ -29,10 +33,11 @@ async function main(): Promise<void> {
   const discover = await runDiscover({ limit, city, sourceId: args.source });
 
   console.log('\n▸ 2/3 ANALYZE');
-  const audit = await runAudit({ limit });
+  const audit = await runAudit({ limit, concurrency: args.concurrency });
 
   console.log('\n▸ 3/3 SCORE + RECOMMEND');
-  const score = await runScore({ limit });
+  // Buyuk partilerde per-lead gerekce ciktisi okunmaz hale geliyor.
+  const score = await runScore({ limit, quiet: args.quiet ?? limit > 25 });
 
   const stats = {
     city,

@@ -1,6 +1,8 @@
 import { getDb, dbExists } from '../client';
 import type { OfferCode, Priority } from '../../types';
-import { latestWebsiteAudit, latestSocialAudits, type StoredWebsiteAudit, type StoredSocialAudit } from './audits';
+import { latestWebsiteAudit, type StoredWebsiteAudit } from './audits';
+import { resolveCompanySocial, type MergedSocialAudit } from '../../social-resolution';
+import { listManualInputs, type StoredSocialManualInput } from './social-manual';
 import { latestLeadScore, latestOffer, type StoredLeadScore, type StoredOffer } from './scores';
 import { getCompany, listContacts, type CompanyRow, type ContactRow } from './companies';
 
@@ -167,7 +169,9 @@ export interface LeadDetail {
   company: CompanyRow;
   contacts: ContactRow[];
   websiteAudit: StoredWebsiteAudit | null;
-  socialAudits: StoredSocialAudit[];
+  /** Otomatik denetim + elle girilen metrikler birlesik. */
+  socialAudits: MergedSocialAudit[];
+  manualInputs: StoredSocialManualInput[];
   score: StoredLeadScore | null;
   offer: StoredOffer | null;
 }
@@ -189,7 +193,8 @@ export function getLeadDetail(leadId: number): LeadDetail | null {
     company,
     contacts: listContacts(company.id),
     websiteAudit: latestWebsiteAudit(company.id),
-    socialAudits: latestSocialAudits(company.id),
+    socialAudits: resolveCompanySocial(company.id),
+    manualInputs: listManualInputs(company.id),
     score: latestLeadScore(lead.id),
     offer: latestOffer(lead.id),
   };

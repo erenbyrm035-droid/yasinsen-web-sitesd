@@ -81,25 +81,36 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
   const modifiers: ScoreBreakdown['purchase']['modifiers'] = [];
   let purchase = base;
 
-  // Ulasilamayan lead satilamaz.
-  if (!input.hasPhone && !input.hasWebsite && !input.hasSocialPresence) {
-    modifiers.push({
-      key: 'noContactChannel',
-      label: 'Hiçbir iletişim kanalı yok (telefon/website/sosyal)',
-      delta: -10,
-    });
-    purchase -= 10;
-  }
+  /**
+   * ULASILABILIRLIK CARPANI
+   *
+   * 100 lead'lik kalibrasyon calismasindan cikan bulgu: hicbir iletisim kanali
+   * olmayan isletmeler digital_gap = 100 aliyor ve sistem bunu "devasa firsat"
+   * sanip skoru yukseltiyordu. Oysa ulasilamayan isletme firsat degildir —
+   * gap'i doldurmak icin once o isletmeye ulasmak gerekir.
+   *
+   * Sabit -10 ceza bu etkiyi kapatmiyordu (100 lead'in 85'i MEDIUM'a yigilmisti).
+   * Bunun yerine skor, ulasilabilirlikle CARPILIR: kanal sayisi arttikca skor
+   * gercek degerine yaklasir.
+   */
+  const channels = [input.hasPhone, input.hasWebsite, input.hasSocialPresence].filter(
+    Boolean,
+  ).length;
 
-  // Ne site ne sosyal: gap mekanik olarak 100'e yakin cikar ama bu isletmeye
-  // ulasip ikna etmenin zorlugunu yansitmaz. Tavan uygulanir.
-  if (!input.hasWebsite && !input.hasSocialPresence && purchase > 60) {
+  const REACHABILITY: Record<number, { factor: number; label: string }> = {
+    0: { factor: 0.55, label: 'Hiçbir iletişim kanalı yok — ulaşılamayan lead' },
+    1: { factor: 0.85, label: 'Tek iletişim kanalı — ulaşmak zor' },
+  };
+
+  const reach = REACHABILITY[channels];
+  if (reach) {
+    const after = purchase * reach.factor;
     modifiers.push({
-      key: 'noDigitalPresenceCap',
-      label: 'Dijital varlık hiç yok — skor 60 ile sınırlandı',
-      delta: Math.round(60 - purchase),
+      key: 'reachability',
+      label: `${reach.label} (×${reach.factor})`,
+      delta: Math.round(after - purchase),
     });
-    purchase = 60;
+    purchase = after;
   }
 
   const purchaseScore = Math.max(0, Math.min(100, Math.round(purchase)));

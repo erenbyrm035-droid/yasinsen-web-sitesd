@@ -7,12 +7,13 @@ import type { OfferCode } from '../types';
  * duzenlemek yeterlidir; motor (engine.ts) yalnizca tabloyu sirayla dener ve
  * ILK ESLESEN kurali uygular.
  *
- * NOT — sartname ornegi hakkinda:
- *   "Website Score = 42, Social Score = 81 → Social Media"
- * Bu kural bilincli olarak sartnamedeki gibi uygulanmistir (R3). Sezgisel
- * beklenti "zayif site → website sat" yonunde olurdu; sartnamedeki mantik ise
- * isletmenin zaten para harcadigi kanali buyutmek uzerine kurulu. Yon
- * degistirilmek istenirse yalnizca R3'un `offer` alani 'A' yapilmalidir.
+ * NOT — sartname ornegindeki bilincli sapma (R4):
+ *   Sartname "Website 42 / Social 81 → Social Media" diyordu.
+ *   Kullanici onayiyla bu kural TERS CEVRILDI: artik ayni durum "Website"
+ *   onerir. Gerekce: sosyalde zaten guclu olan bir isletmenin darbogazi
+ *   trafigin indigi yerdir — zayif site, sosyalden gelen ilgiyi uyeye
+ *   cevirmeden kaybeder. Once o zemin duzeltilir.
+ *   Geri almak icin yalnizca R4'un `offer` alani 'C' yapilir.
  */
 
 export const OFFER_LABELS: Record<OfferCode, string> = {
@@ -87,12 +88,13 @@ export const OFFER_RULES: OfferRule[] = [
   },
   {
     id: 'R4',
-    description: 'Site zayıf, sosyal güçlü → sosyal medyayı büyüt (şartname örneği)',
+    description: 'Site zayıf, sosyal güçlü → önce siteyi düzelt (dönüşüm darboğazı)',
     matches: (c) => c.websiteScore < 55 && socialOrZero(c) >= 70,
-    offer: () => 'C',
+    offer: () => 'A',
     rationale: (c) =>
       `Sosyal medyada güçlü bir varlık var (${c.socialScore}) ama website zayıf (${c.websiteScore}). ` +
-      'İşletme pazarlamaya zaten bütçe ayırıyor; kazanç en hızlı bu kanalı büyüterek gelir.',
+      'İşletme trafiği zaten üretiyor; darboğaz o trafiğin indiği yer. ' +
+      'Sosyalden gelen ilgi üyeye dönüşmeden kayboluyor — önce bu zemin düzeltilmeli.',
   },
   {
     id: 'R5',

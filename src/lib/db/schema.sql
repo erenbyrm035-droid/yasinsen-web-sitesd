@@ -112,6 +112,37 @@ CREATE TABLE IF NOT EXISTS social_audits (
 CREATE INDEX IF NOT EXISTS idx_social_audits_company ON social_audits (company_id, fetched_at DESC);
 
 -- ---------------------------------------------------------------------------
+-- social_manual_inputs — elle girilen sosyal medya metrikleri
+--
+-- Instagram public profilleri login duvarinin arkasinda oldugu icin takipci,
+-- etkilesim ve icerik metrikleri otomatik olculemiyor. Bu tablo, dashboard'dan
+-- ELLE girilen degerleri tutar ve girilen alanlar sosyal skoru tam rubrikle
+-- hesaplatir.
+--
+-- Denetim tablolarindan AYRI durur: `npm run audit` tekrar calistiginda
+-- silinmez. Her alan NULL olabilir — yalnizca girilenler hesaba katilir.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS social_manual_inputs (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  company_id         INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+  platform           TEXT    NOT NULL,
+  followers          INTEGER,  -- takipci sayisi
+  posts_last_30d     INTEGER,  -- son 30 gunde paylasim sayisi
+  reels_last_30d     INTEGER,  -- son 30 gunde Reels/video sayisi
+  avg_likes          INTEGER,  -- son gonderilerin ortalama begenisi
+  visual_quality     INTEGER CHECK (visual_quality BETWEEN 1 AND 5),   -- 1-5 elle degerlendirme
+  sales_content      INTEGER CHECK (sales_content BETWEEN 1 AND 5),    -- satisa yonelik icerik yogunlugu
+  bio_has_website    INTEGER,  -- 0/1 bio'da site linki var mi
+  bio_has_contact    INTEGER,  -- 0/1 bio'da iletisim bilgisi var mi
+  note               TEXT,
+  entered_by         TEXT,
+  updated_at         TEXT    NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (company_id, platform)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_manual_company ON social_manual_inputs (company_id);
+
+-- ---------------------------------------------------------------------------
 -- lead_scores — hesaplanan skorlar (formuller: docs/SCORING.md)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS lead_scores (

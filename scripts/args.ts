@@ -4,6 +4,10 @@ export interface CliArgs {
   city?: string;
   source?: string;
   force?: boolean;
+  /** Buyuk partilerde per-lead gerekce ciktisini susturur. */
+  quiet?: boolean;
+  /** Es zamanli website denetimi sayisi. */
+  concurrency?: number;
 }
 
 export function parseArgs(argv: string[]): CliArgs {
@@ -36,8 +40,21 @@ export function parseArgs(argv: string[]): CliArgs {
           i += 1;
         }
         break;
+      case '--concurrency':
+        if (next) {
+          const parsed = Number.parseInt(next, 10);
+          if (Number.isNaN(parsed) || parsed < 1 || parsed > 12) {
+            throw new Error(`--concurrency 1-12 arasi olmali, alinan: "${next}"`);
+          }
+          args.concurrency = parsed;
+          i += 1;
+        }
+        break;
       case '--force':
         args.force = true;
+        break;
+      case '--quiet':
+        args.quiet = true;
         break;
       default:
         break;

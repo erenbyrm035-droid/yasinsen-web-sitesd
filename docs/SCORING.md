@@ -93,8 +93,38 @@ Hiç doğrulanabilir sinyal yoksa **`null` döner — `0` değil.** "Sosyal medy
 yok" ile "sosyal medyası ölçülemedi" farklı şeylerdir ve skorlamada farklı
 davranırlar.
 
-> Gerçek metrikler için Instagram Graph API bağlanmalı. Bağlanınca `confidence`
-> yükselir ve digital gap formülündeki sosyal ağırlığı otomatik olarak artar.
+### Manuel giriş — duvarı aşmanın anahtarsız yolu
+
+Dashboard'da her lead için **elle metrik girilebilir** (lead detay sayfası →
+"Manuel Sosyal Medya Girişi"). Girilen alanlar tam rubriği devreye sokar:
+
+| Alan | Ağırlık | Puanlama |
+|---|---|---|
+| Takipçi sayısı | 20 | ≥10k:100 · ≥5k:85 · ≥2k:70 · ≥500:50 · ≥100:30 · altı:15 |
+| İçerik sıklığı (son 30 gün) | 20 | ≥20:100 · ≥12:85 · ≥8:70 · ≥4:50 · ≥1:25 · 0:0 |
+| Reels kullanımı (son 30 gün) | 15 | ≥8:100 · ≥4:80 · ≥2:60 · ≥1:40 · 0:10 |
+| Etkileşim oranı | 20 | ort. beğeni ÷ takipçi → ≥%6:100 · ≥%3:85 · ≥%1.5:65 · ≥%0.5:40 · altı:20 |
+| Görsel kalite (1–5) | 10 | doğrusal |
+| Satışa yönelik içerik (1–5) | 10 | doğrusal |
+| Bio içeriği | 5 | site linki + iletişim |
+
+**Birleşik skor** = %30 otomatik sinyal + %70 manuel rubrik.
+**Güven**, girilen alanların ağırlık kapsamına göre yükselir: ≥%80 → `high`,
+≥%40 → `medium`, altı → `low`.
+
+Boş bırakılan her alan `null` kalır ve **paydadan da düşülür** — "girilmedi"
+asla "kötü" anlamına gelmez.
+
+### Şirket geneli sosyal skor: önce güven, sonra skor
+
+Birden fazla platform varsa seçim **önce güvene, sonra skora** göre yapılır.
+Bu sıralama bilinçli: elle ölçülmüş 86 ile yalnızca *"sitede link var + profil
+açılıyor"* sinyalinden üretilmiş 90 aynı şey değildir. Yüksek güvenli ölçüm,
+düşük güvenli tahmini daima yener — aksi halde gerçek veri girmek skoru
+düşürebilir ve kullanıcı veri girmekten caydırılırdı.
+
+> Tam otomasyon için Instagram Graph API bağlanabilir; bağlanınca manuel giriş
+> gerekmeden aynı rubrik çalışır.
 
 ---
 
@@ -186,12 +216,24 @@ base = 0.35 × digital_gap
 satışa dönmez. `buying_intent` en spekülatif bileşen olduğu için biraz daha
 düşük ağırlıkta.
 
-**Modifierlar** (hepsi `breakdown.purchase.modifiers` içinde görünür):
+### Ulaşılabilirlik çarpanı
 
-| Modifier | Etki | Koşul |
-|---|---|---|
-| `noContactChannel` | −10 | Telefon, website ve sosyal medyanın hiçbiri yok |
-| `noDigitalPresenceCap` | tavan 60 | Ne website ne sosyal var — gap mekanik olarak 100'e yakın çıkar ama bu işletmeye ulaşıp ikna etmenin zorluğunu yansıtmaz |
+Ardından skor, işletmeye kaç kanaldan ulaşılabildiğine göre **çarpılır**
+(`breakdown.purchase.modifiers` içinde görünür):
+
+| Kanal sayısı (telefon / website / sosyal) | Çarpan |
+|---|---|
+| 0 — hiçbiri | ×0.55 |
+| 1 | ×0.85 |
+| 2 veya 3 | ×1.00 |
+
+**Bu neden çarpan, neden sabit ceza değil:** 100 lead'lik kalibrasyon
+çalışmasında ortaya çıktı ki hiçbir iletişim kanalı olmayan işletmeler
+`digital_gap = 100` alıyor ve sistem bunu "devasa fırsat" sanıyordu. Oysa
+ulaşamadığınız işletme fırsat değildir — boşluğu doldurmak için önce o
+işletmeye ulaşmak gerekir. Önceki sabit −10 ceza bu etkiyi kapatmıyordu:
+100 lead'in 85'i MEDIUM'a yığılmış, hiçbiri HOT çıkmamış, tüm aralık 39–74'e
+sıkışmıştı. Çarpana geçildikten sonra dağılım açıldı (aşağıya bakın).
 
 Sonuç 0–100 aralığına sıkıştırılır.
 
@@ -206,6 +248,33 @@ Sonuç 0–100 aralığına sıkıştırılır.
 
 Dashboard varsayılan sıralaması `purchase_score DESC` — en yüksek potansiyel
 üstte.
+
+### Kalibrasyon: 100 lead üzerinde gerçek dağılım
+
+| | Kalibrasyon öncesi | Kalibrasyon sonrası |
+|---|---|---|
+| Aralık | 39 – 74 | 34 – 74 |
+| Medyan | 54 | 39 |
+| HOT / HIGH / MEDIUM / LOW | 0 / 11 / 85 / 4 | 0 / 10 / 35 / 55 |
+
+Kalibrasyon öncesi 100 lead'in **85'i MEDIUM'du** — yani öncelik etiketi hiçbir
+şey ayırt etmiyordu. Ulaşılabilirlik çarpanından sonra dağılım iki gruba
+ayrıldı: ulaşılamayan 55 kayıt 34–39 bandına indi, çalışılabilir 45 lead
+50–74 arasına yayıldı. Artık sıralamanın üstü gerçekten aranacak listedir.
+
+### HOT neden 0?
+
+HOT (≥80) için üç eksenin de birden yüksek olması gerekir. Şu an iki girdi
+eksik veri yüzünden tavanlı:
+
+- **Karar verici yok** (Apollo Free plan) → `business_potential` bileşenlerinden
+  biri hiç ölçülemiyor
+- **Sosyal metrikler ölçülemiyor** (Instagram duvarı) → `digital_gap`'te sosyal
+  ağırlığı 0.40 → 0.20'ye düşürülüyor
+
+Bu eksikler kapandıkça HOT ulaşılabilir hale gelir. Eşikleri yapay olarak
+düşürmedik — 80'i hak etmeyen bir lead'e HOT demek, etiketi işe yaramaz kılardı.
+Şu an için **aranacak liste HIGH bandıdır** (10 lead).
 
 ---
 

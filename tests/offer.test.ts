@@ -50,8 +50,30 @@ function offerFor(overrides: Overrides): OfferCode {
 }
 
 describe('Offer engine — sartnamedeki ornekler', () => {
-  test('Website 42 / Social 81 → C (Social Media)', () => {
-    assert.equal(offerFor({ websiteScore: 42, socialScore: 81 }), 'C');
+  // BILINCLI SAPMA (kullanici onayli): sartname burada "Social Media" diyordu.
+  // Kural ters cevrildi — zayif site, sosyalden gelen ilgiyi uyeye cevirmeden
+  // kaybettigi icin once o zemin duzeltilir. Geri almak: rules.ts R4 → 'C'.
+  test('Website 42 / Social 81 → A (Website) — R4 ters çevrildi', () => {
+    const result = recommendOffer({
+      websiteScore: 42,
+      socialScore: 81,
+      digitalGap: 50,
+      businessPotential: 60,
+      hasWebsite: true,
+      hasSocialPresence: true,
+      hasPhone: true,
+      hasBooking: false,
+      hasMembership: false,
+      employeeCount: null,
+      isInstitutional: false,
+      checks: [],
+      socialConfidence: 'low',
+      websiteConfidence: 'high',
+    });
+    assert.equal(result.offerCode, 'A');
+    // Gerekce, sadece "site zayif" degil, donusum darbogazi cercevesini tasimali.
+    assert.match(result.rationale, /^\[R4\]/);
+    assert.match(result.rationale, /darboğaz/);
   });
 
   test('Website 48 / Social 45 → A (Website)', () => {
@@ -155,8 +177,8 @@ describe('Offer engine — yapisal garantiler', () => {
 
   test('gerekce daima uygulanan kuralin kimligini tasir', () => {
     const result = recommendOffer({
-      websiteScore: 42,
-      socialScore: 81,
+      websiteScore: 62,
+      socialScore: 60,
       digitalGap: 50,
       businessPotential: 60,
       hasWebsite: true,

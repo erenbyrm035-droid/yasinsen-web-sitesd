@@ -49,16 +49,23 @@ Pipeline idempotenttir — tekrar çalıştırmak kayıt çoğaltmaz.
 
 ## Mevcut durum
 
-10 gerçek İstanbul işletmesiyle uçtan uca doğrulandı:
+100 gerçek İstanbul işletmesiyle uçtan uca doğrulandı (151 saniye):
 
 | Metrik | Değer |
 |---|---|
-| Lead | 10 |
-| Denetlenen | 10 |
-| Erişilebilir site | 6 |
-| Site yok / açılmıyor | 4 |
-| Bulunan sosyal profil | 6 |
-| HIGH öncelikli | 2 |
+| Lead | 100 |
+| Denetlenen | 100 |
+| Erişilebilir site | 35 |
+| Site yok / açılmıyor | 65 |
+| Bulunan sosyal profil | 47 |
+| Öncelik dağılımı | HIGH 10 · MEDIUM 35 · LOW 55 |
+
+**Kalibrasyon yapıldı.** İlk çalıştırmada 100 lead'in 85'i MEDIUM çıkıyordu —
+öncelik etiketi hiçbir şey ayırt etmiyordu. Sebep: hiçbir iletişim kanalı
+olmayan 50 işletme `digital_gap = 100` alıp "devasa fırsat" gibi görünüyordu.
+Ulaşılabilirlik çarpanı eklendi (0 kanal ×0.55, 1 kanal ×0.85); dağılım açıldı
+ve sıralamanın üstü artık gerçekten aranacak liste. Ayrıntı:
+[`docs/SCORING.md`](docs/SCORING.md#kalibrasyon-100-lead-üzerinde-gerçek-dağılım)
 
 ## Bilinen sınırlar
 
@@ -68,16 +75,31 @@ işaretler.
 | Sınır | Etki | Çözüm |
 |---|---|---|
 | **Apollo Free plan** — People Search API kapalı | Karar verici alanları `NULL` | Plan yükseltilip `APOLLO_API_KEY` verilir → [`docs/APOLLO.md`](docs/APOLLO.md) |
-| **Instagram login duvarı** | Takipçi/etkileşim/Reels ölçülemiyor; sosyal skor sadece doğrulanabilir sinyallerden, `confidence: low` | Instagram Graph API bağlanabilir |
+| **Instagram login duvarı** | Otomatik takipçi/etkileşim/Reels ölçümü yok | **Çözüldü (kısmen):** dashboard'da lead başına manuel metrik girişi var — girilince tam rubrik devreye girer, güven `high`'a çıkar, lead anında yeniden skorlanır. Tam otomasyon için Instagram Graph API |
 | **PageSpeed anahtarı yok** | Lighthouse yerine yerel performans sezgiselleri (kanıt alanında açıkça belirtilir) | Ücretsiz `PAGESPEED_API_KEY` eklenir |
 | **OSM çalışan sayısı vermez** | `employee_count` `NULL`; skorlamada bileşen olarak hiç sayılmaz | Apollo açılınca dolar |
 
-### Teyit bekleyen tasarım kararı
+### Şartnameden bilinçli sapma
 
-Şartnamedeki `Website 42 / Social 81 → Social Media` örneği sezgisel beklentinin
-tersi yönde (zayıf site varken sosyal satmak). **Şartnamede yazdığı gibi
-uygulandı** ve fixture testiyle kilitlendi. Yön değiştirilmek istenirse yalnızca
-`src/lib/offer/rules.ts` içindeki **R4** kuralının `offer` alanı `'A'` yapılır.
+Şartnamedeki `Website 42 / Social 81 → Social Media` örneği **kullanıcı onayıyla
+ters çevrildi**: artık aynı durum `Website` önerir. Gerekçe — sosyalde zaten
+güçlü olan bir işletmenin darboğazı trafiğin indiği yerdir; zayıf site,
+sosyalden gelen ilgiyi üyeye çevirmeden kaybeder. Geri almak için
+`src/lib/offer/rules.ts` içindeki **R4** kuralının `offer` alanı `'C'` yapılır.
+
+### Komut seçenekleri
+
+```bash
+npm run pipeline -- --limit 100 --city istanbul --concurrency 5
+```
+
+| Bayrak | Ne yapar |
+|---|---|
+| `--limit N` | Kaç lead işlenecek |
+| `--city` | Şu an `istanbul` tanımlı |
+| `--source` | `osm` (varsayılan) veya `apollo` |
+| `--concurrency N` | Eş zamanlı website denetimi (1–12, varsayılan 4). Her lead farklı bir alan adına gittiği için tek siteyi yormaz. |
+| `--quiet` | Lead başına gerekçe çıktısını susturur (25+ lead'de otomatik) |
 
 ## Teknoloji
 

@@ -1,3 +1,7 @@
+import { loadEnv } from '../src/lib/env';
+
+loadEnv();
+
 import { initSchema, closeDb } from '../src/lib/db/client';
 import { listCompanies } from '../src/lib/db/repositories/companies';
 import { insertWebsiteAudit, insertSocialAudit } from '../src/lib/db/repositories/audits';
@@ -8,9 +12,14 @@ import { parseArgs } from './args';
 
 /**
  * ANALYZE asamasi: her isletme icin website + sosyal denetim calistirir.
- * Denetimler sirayla yapilir — hedef siteleri es zamanli isteklerle yormamak icin.
+ *
+ * Sinirli es zamanlilik (varsayilan 4) kullanilir. Her lead FARKLI bir alan
+ * adina gittigi icin bu, tek bir siteyi yormaz — ayni anda 4 ayri isletmenin
+ * sitesi denetlenir. `--concurrency 1` ile tamamen siraya alinabilir.
  */
-export async function runAudit(options: { limit?: number } = {}): Promise<{
+export async function runAudit(
+  options: { limit?: number; concurrency?: number } = {},
+): Promise<{
   audited: number;
   withWebsite: number;
   withoutWebsite: number;
@@ -24,38 +33,53 @@ export async function runAudit(options: { limit?: number } = {}): Promise<{
     return { audited: 0, withWebsite: 0, withoutWebsite: 0, socialProfiles: 0 };
   }
 
+  const concurrency = Math.min(options.concurrency ?? 4, companies.length);
   const runId = startRun('audit');
-  console.log(`[audit] ${companies.length} isletme denetleniyor...`);
+  console.log(`[audit] ${companies.length} isletme denetleniyor (es zamanli: ${concurrency})...`);
 
   let withWebsite = 0;
   let withoutWebsite = 0;
   let socialProfiles = 0;
+  let cursor = 0;
+  let done = 0;
 
-  for (const company of companies) {
-    const result = await auditCompany(company.website);
+  /**
+   * Havuzdan sirayla is ceker. DB yazmalari better-sqlite3 senkron oldugu icin
+   * dogal olarak seri kalir; yalnizca ag istekleri paralellesir.
+   */
+  async function worker(): Promise<void> {
+    while (cursor < companies.length) {
+      const company = companies[cursor];
+      cursor += 1;
 
-    insertWebsiteAudit(company.id, result.website);
-    for (const social of result.social) {
-      insertSocialAudit(company.id, social);
+      const result = await auditCompany(company.website);
+
+      insertWebsiteAudit(company.id, result.website);
+      for (const social of result.social) {
+        insertSocialAudit(company.id, social);
+      }
+
+      const leadId = ensureLead(company.id);
+      setLeadStatus(leadId, 'analyzed');
+
+      if (result.website.hasWebsite && result.website.httpStatus !== null) withWebsite += 1;
+      else withoutWebsite += 1;
+      socialProfiles += result.social.length;
+
+      done += 1;
+      const socialSummary =
+        result.social.length > 0
+          ? result.social.map((s) => `${s.platform}:${s.score ?? '—'}`).join(' ')
+          : 'sosyal profil yok';
+
+      console.log(
+        `  · [${done}/${companies.length}] ${company.name} — ` +
+          `website ${result.website.score}/100 (${result.website.confidence}) | ${socialSummary}`,
+      );
     }
-
-    const leadId = ensureLead(company.id);
-    setLeadStatus(leadId, 'analyzed');
-
-    if (result.website.hasWebsite && result.website.httpStatus !== null) withWebsite += 1;
-    else withoutWebsite += 1;
-    socialProfiles += result.social.length;
-
-    const socialSummary =
-      result.social.length > 0
-        ? result.social.map((s) => `${s.platform}:${s.score ?? '—'}`).join(' ')
-        : 'sosyal profil yok';
-
-    console.log(
-      `  · ${company.name} — website ${result.website.score}/100 (${result.website.confidence}) | ${socialSummary}`,
-    );
-    if (result.website.notes) console.log(`      ${result.website.notes}`);
   }
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
   const stats = { audited: companies.length, withWebsite, withoutWebsite, socialProfiles };
   finishRun(runId, stats);
@@ -69,7 +93,7 @@ export async function runAudit(options: { limit?: number } = {}): Promise<{
 
 if (process.argv[1]?.endsWith('audit.ts')) {
   const args = parseArgs(process.argv.slice(2));
-  runAudit({ limit: args.limit })
+  runAudit({ limit: args.limit, concurrency: args.concurrency })
     .catch((err) => {
       console.error(`[audit] HATA: ${err instanceof Error ? err.message : String(err)}`);
       process.exitCode = 1;
