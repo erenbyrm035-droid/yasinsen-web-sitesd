@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS companies (
   segment           TEXT,             -- 'boutique_gym', 'pilates_studio', ...
   employee_count    INTEGER,          -- NULL = bilinmiyor (OSM bu veriyi vermez)
   phone             TEXT,
+  rating            REAL,             -- Google puani (yalnizca Places kaynagi)
+  review_count      INTEGER,          -- yorum sayisi — gercek musteri hacmi sinyali
   source            TEXT    NOT NULL, -- 'osm' | 'apollo'
   source_ref        TEXT    NOT NULL, -- 'node/2585358357' | apollo org id
   raw               TEXT,             -- JSON: kaynak kaydin ham hali

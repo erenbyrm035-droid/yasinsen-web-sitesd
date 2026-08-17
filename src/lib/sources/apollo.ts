@@ -109,6 +109,9 @@ function personToCompany(person: ApolloPerson): DiscoveredCompany | null {
     segment,
     employeeCount: org.estimated_num_employees ?? null,
     phone: org.phone ?? null,
+    // OSM/Apollo puan ve yorum verisi tasimaz — Places doldurur.
+    rating: null,
+    reviewCount: null,
     source: 'apollo',
     sourceRef: org.id ?? `person:${person.id ?? org.name}`,
     raw: person,

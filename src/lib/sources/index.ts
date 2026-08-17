@@ -1,9 +1,11 @@
 import type { LeadSource } from '../types';
 import { overpassSource } from './overpass';
 import { apolloSource } from './apollo';
+import { placesSource } from './places';
 
 export const SOURCES: Record<string, LeadSource> = {
   osm: overpassSource,
+  places: placesSource,
   apollo: apolloSource,
 };
 
@@ -18,5 +20,6 @@ export function getSource(id?: string): LeadSource {
   return source;
 }
 
-export { overpassSource, apolloSource };
+export { overpassSource, apolloSource, placesSource };
 export { ApolloUnavailableError } from './apollo';
+export { PlacesUnavailableError } from './places';

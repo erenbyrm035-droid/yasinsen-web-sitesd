@@ -28,10 +28,33 @@ export function getDb(): Database.Database {
   return db;
 }
 
+/**
+ * Sema sonrasi eklenen kolonlar.
+ *
+ * `CREATE TABLE IF NOT EXISTS` mevcut tabloya yeni kolon eklemez, bu yuzden
+ * sonradan gelen alanlar burada idempotent olarak eklenir. Var olan
+ * veritabanlari silinmeden guncellenir.
+ */
+const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
+  { table: 'companies', column: 'rating', definition: 'REAL' },
+  { table: 'companies', column: 'review_count', definition: 'INTEGER' },
+];
+
+function applyAddedColumns(db: Database.Database): void {
+  for (const { table, column, definition } of ADDED_COLUMNS) {
+    const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (columns.length === 0) continue; // tablo yok — sema henuz uygulanmamis
+    if (columns.some((c) => c.name === column)) continue;
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
 /** Semayi uygular. Idempotent — her tablo CREATE TABLE IF NOT EXISTS. */
 export function initSchema(): void {
   const sql = readFileSync(SCHEMA_PATH, 'utf8');
-  getDb().exec(sql);
+  const db = getDb();
+  db.exec(sql);
+  applyAddedColumns(db);
 }
 
 /** Veritabani dosyasi olusturulmus mu (dashboard'in bos durumu ayirt etmesi icin). */

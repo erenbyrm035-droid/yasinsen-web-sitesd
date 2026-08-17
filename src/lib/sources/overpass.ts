@@ -176,6 +176,9 @@ function toCompany(el: OverpassElement, city: string): DiscoveredCompany | null 
     // OSM calisan sayisi tasimaz — tahmin edilmez.
     employeeCount: null,
     phone: tags.phone ?? tags['contact:phone'] ?? tags['contact:mobile'] ?? null,
+    // OSM/Apollo puan ve yorum verisi tasimaz — Places doldurur.
+    rating: null,
+    reviewCount: null,
     source: 'osm',
     sourceRef: `${el.type}/${el.id}`,
     raw: tags,

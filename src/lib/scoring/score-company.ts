@@ -40,6 +40,7 @@ export function scoreCompany(company: CompanyRow): ScoreCompanyResult | null {
     segment: (company.segment ?? 'fitness_other') as Segment,
     district: company.location_district,
     employeeCount: company.employee_count,
+    reviewCount: company.review_count,
     hasPhone: Boolean(company.phone),
     isInstitutional: institutional,
 

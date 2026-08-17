@@ -16,18 +16,20 @@ doğrulanır — bkz. [`docs/SAFETY.md`](docs/SAFETY.md).
 
 ```bash
 npm install
-npm run db:init
-npm run pipeline -- --limit 10 --city istanbul
+npm run setup        # veritabanı + 25 lead, uçtan uca (~1-2 dk)
 npm run dev          # → http://localhost:3000
 ```
 
 Hiçbir API anahtarı gerekmez. Anahtarsız çalışırken sistem OSM discovery, yerel
 performans ölçümü ve deterministik gerekçe üretimi kullanır.
 
+Bilgisayarınıza kurmak için adım adım rehber: **[KURULUM.md](KURULUM.md)**
+
 ## Komutlar
 
 | Komut | Ne yapar |
 |---|---|
+| `npm run setup` | Veritabanı + 25 lead, tek komutta |
 | `npm run db:init` | Şemayı uygular (idempotent) |
 | `npm run discover -- --limit 10 --city istanbul` | İşletmeleri keşfeder |
 | `npm run audit -- --limit 10` | Website + sosyal denetim |
@@ -97,7 +99,7 @@ npm run pipeline -- --limit 100 --city istanbul --concurrency 5
 |---|---|
 | `--limit N` | Kaç lead işlenecek |
 | `--city` | Şu an `istanbul` tanımlı |
-| `--source` | `osm` (varsayılan) veya `apollo` |
+| `--source` | `osm` (varsayılan) · `places` (Google, daha zengin) · `apollo` |
 | `--concurrency N` | Eş zamanlı website denetimi (1–12, varsayılan 4). Her lead farklı bir alan adına gittiği için tek siteyi yormaz. |
 | `--quiet` | Lead başına gerekçe çıktısını susturur (25+ lead'de otomatik) |
 

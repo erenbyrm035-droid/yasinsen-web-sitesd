@@ -39,6 +39,10 @@ export interface DiscoveredCompany {
   segment: Segment;
   employeeCount: number | null;
   phone: string | null;
+  /** Google puani — yalnizca Places kaynagi doldurur. */
+  rating: number | null;
+  /** Yorum sayisi — gercek musteri hacmi sinyali. Yalnizca Places. */
+  reviewCount: number | null;
   source: string;
   /** Kaynak sistemdeki benzersiz kimlik — idempotent upsert icin. */
   sourceRef: string;

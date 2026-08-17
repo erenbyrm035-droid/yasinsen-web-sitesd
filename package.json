@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "setup": "npm run db:init && npm run pipeline -- --limit 25 --city istanbul --concurrency 4",
     "db:init": "tsx scripts/db-init.ts",
     "discover": "tsx scripts/discover.ts",
     "audit": "tsx scripts/audit.ts",

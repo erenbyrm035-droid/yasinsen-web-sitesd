@@ -35,6 +35,8 @@ export interface LeadScoreInput {
   employeeCount: number | null;
   hasPhone: boolean;
   isInstitutional: boolean;
+  /** Google yorum sayisi — yalnizca Places kaynagi doldurur. */
+  reviewCount?: number | null;
 
   websiteScore: number;
   hasWebsite: boolean;
@@ -53,6 +55,7 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
     segment: input.segment,
     district: input.district,
     employeeCount: input.employeeCount,
+    reviewCount: input.reviewCount ?? null,
     hasWebsite: input.hasWebsite && !input.websiteBroken,
     hasSocialPresence: input.hasSocialPresence,
     hasPhone: input.hasPhone,

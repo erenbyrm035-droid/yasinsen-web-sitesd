@@ -14,6 +14,8 @@ export interface CompanyRow {
   segment: string | null;
   employee_count: number | null;
   phone: string | null;
+  rating: number | null;
+  review_count: number | null;
   source: string;
   source_ref: string;
   raw: string | null;
@@ -45,13 +47,17 @@ export function upsertCompany(c: DiscoveredCompany): number {
   const stmt = db.prepare(`
     INSERT INTO companies (
       name, website, domain, location_city, location_district, lat, lon,
-      industry, segment, employee_count, phone, source, source_ref, raw
+      industry, segment, employee_count, phone, rating, review_count,
+      source, source_ref, raw
     ) VALUES (
       @name, @website, @domain, @city, @district, @lat, @lon,
-      @industry, @segment, @employeeCount, @phone, @source, @sourceRef, @raw
+      @industry, @segment, @employeeCount, @phone, @rating, @reviewCount,
+      @source, @sourceRef, @raw
     )
     ON CONFLICT (source, source_ref) DO UPDATE SET
       name              = excluded.name,
+      rating            = COALESCE(excluded.rating, companies.rating),
+      review_count      = COALESCE(excluded.review_count, companies.review_count),
       website           = COALESCE(excluded.website, companies.website),
       domain            = COALESCE(excluded.domain, companies.domain),
       location_city     = COALESCE(excluded.location_city, companies.location_city),
@@ -79,6 +85,8 @@ export function upsertCompany(c: DiscoveredCompany): number {
     segment: c.segment,
     employeeCount: c.employeeCount,
     phone: c.phone,
+    rating: c.rating,
+    reviewCount: c.reviewCount,
     source: c.source,
     sourceRef: c.sourceRef,
     raw: JSON.stringify(c.raw ?? null),

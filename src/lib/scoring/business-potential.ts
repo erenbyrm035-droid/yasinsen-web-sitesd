@@ -63,6 +63,20 @@ function employeeScore(count: number | null): { value: number; detail: string } 
   return { value: 40, detail: `${count} çalışan — mikro işletme` };
 }
 
+/**
+ * Yorum sayisi, elimizdeki EN IYI gercek musteri hacmi sinyalidir: calisan
+ * sayisini kimse vermiyor, ama kac kisinin o salona gidip yorum biraktigi
+ * dogrudan olculebiliyor. Yalnizca Places kaynagi doldurur.
+ */
+function reviewVolumeScore(count: number): { value: number; detail: string } {
+  if (count >= 200) return { value: 100, detail: `${count} Google yorumu — yüksek müşteri hacmi` };
+  if (count >= 100) return { value: 85, detail: `${count} Google yorumu — oturmuş müşteri tabanı` };
+  if (count >= 50) return { value: 70, detail: `${count} Google yorumu — istikrarlı işletme` };
+  if (count >= 20) return { value: 55, detail: `${count} Google yorumu — orta ölçek` };
+  if (count >= 5) return { value: 40, detail: `${count} Google yorumu — küçük işletme` };
+  return { value: 25, detail: `${count} Google yorumu — çok düşük görünürlük` };
+}
+
 export interface BusinessPotentialInput {
   segment: Segment;
   district: string | null;
@@ -70,6 +84,8 @@ export interface BusinessPotentialInput {
   hasWebsite: boolean;
   hasSocialPresence: boolean;
   hasPhone: boolean;
+  /** Google yorum sayisi — bilinmiyorsa null, bilesen hic sayilmaz. */
+  reviewCount?: number | null;
   /** Belediye/universite tesisi — satis hedefi degil. */
   isInstitutional: boolean;
 }
@@ -82,6 +98,8 @@ export interface BusinessPotentialResult {
 const WEIGHTS = {
   segment: 30,
   district: 25,
+  /** Places verisi geldiginde en agirlikli bilesen: gercek musteri hacmi. */
+  reviewVolume: 25,
   digitalFootprint: 20,
   employees: 15,
   contactability: 10,
@@ -109,6 +127,19 @@ export function computeBusinessPotential(
     weight: WEIGHTS.district,
     detail: district.detail,
   });
+
+  // Yorum sayisi yalnizca Places kaynagindan gelir. Bilinmiyorsa bilesen hic
+  // sayilmaz — OSM lead'leri bu yuzden cezalandirilmaz.
+  if (input.reviewCount !== null && input.reviewCount !== undefined) {
+    const reviews = reviewVolumeScore(input.reviewCount);
+    components.push({
+      key: 'reviewVolume',
+      label: 'Müşteri hacmi (Google yorumları)',
+      value: reviews.value,
+      weight: WEIGHTS.reviewVolume,
+      detail: reviews.detail,
+    });
+  }
 
   // Dijital ayak izi burada "kalite" degil "varlik" olarak okunur:
   // hicbir kanalda gorunmeyen isletme genelde daha kucuk ve daha az kurumsaldir.
