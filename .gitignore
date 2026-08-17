@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Local database — regenerate with `npm run db:init`
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Apollo MCP ciktisinin kaydedilmis hali (kisisel veri icerebilir)
+data/apollo-import.json
+
+.env
+.env.local
+.env*.local
+
+*.log
+npm-debug.log*
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts

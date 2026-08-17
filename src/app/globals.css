@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink: #0b0f19;
+  --color-surface: #11172a;
+  --color-surface-2: #161d33;
+  --color-line: #232b45;
+  --color-muted: #8b94ad;
+  --color-accent: #5b8cff;
+
+  --color-hot: #ff5a4d;
+  --color-high: #ffab2e;
+  --color-medium: #45c0d6;
+  --color-low: #6b7592;
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: #e8ecf5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+}
+
+/* Tablo basliklari yapiskan kalsin */
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
