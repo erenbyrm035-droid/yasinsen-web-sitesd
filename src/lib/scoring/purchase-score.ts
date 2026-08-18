@@ -58,6 +58,8 @@ export interface LeadScoreInput {
   socialScore: number | null;
   socialConfidence: SocialConfidence;
   hasSocialPresence: boolean;
+  /** Sosyal medyaya bakilabildi mi. false = yoklugu kanit sayilmaz. */
+  socialPresenceKnown: boolean;
 }
 
 export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
@@ -85,6 +87,7 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
     hasWebsite: input.hasWebsite,
     websiteBroken: input.websiteBroken,
     hasSocialPresence: input.hasSocialPresence,
+    socialPresenceKnown: input.socialPresenceKnown,
     hasPhone: input.hasPhone,
     checks: input.checks,
     copyrightYear: input.copyrightYear,

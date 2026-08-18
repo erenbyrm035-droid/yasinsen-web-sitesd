@@ -28,6 +28,15 @@ export interface BuyingIntentInput {
   /** Site kayitli ama sunucuya hic ulasilamadi (DNS/baglanti hatasi). */
   websiteBroken: boolean;
   hasSocialPresence: boolean;
+  /**
+   * Sosyal medyaya BAKABILDIK mi?
+   *
+   * false ise "sosyal medyasi yok" DENEMEZ — yalnizca bakilamadi demektir.
+   * Sitesi olmayan bir isletmede tarayacak sayfa yoktur; arama katmani da
+   * kapaliysa hicbir yere bakilmamis olur. Bu durumda yoklugu kanit saymak,
+   * kanit yoklugunu yokluk kaniti sanmak olur.
+   */
+  socialPresenceKnown: boolean;
   hasPhone: boolean;
   checks: AuditCheck[];
   copyrightYear: number | null;
@@ -141,17 +150,27 @@ export function computeBuyingIntent(input: BuyingIntentInput): BuyingIntentResul
 
   // 5) Isletme aktif ama dijitalde yok: telefonu var, sitesi/sosyali yok.
   //    Sifirdan kurulum firsati — yuksek gap ama satis daha zahmetli.
-  const activeButOffline = !input.hasWebsite && !input.hasSocialPresence && input.hasPhone;
+  const noWebsite = !input.hasWebsite;
+  const verifiedOffline =
+    noWebsite && input.socialPresenceKnown && !input.hasSocialPresence && input.hasPhone;
+  // Website yoklugu KESIN bir bulgu; sosyal medya durumu bilinmiyorsa bunu
+  // ayri soyleriz ve iddiayi yalnizca bildigimiz kadariyla kurariz.
+  const websiteOnlyOffline = noWebsite && !input.socialPresenceKnown && input.hasPhone;
+
   components.push({
     key: 'activeButOffline',
     label: 'İşletme aktif ama dijitalde yok',
-    value: activeButOffline ? 100 : !input.hasWebsite ? 60 : 10,
+    value: verifiedOffline ? 100 : websiteOnlyOffline ? 70 : noWebsite ? 60 : 10,
     weight: WEIGHTS.activeButOffline,
-    detail: activeButOffline
+    detail: verifiedOffline
       ? 'Telefon kayıtlı, website ve sosyal medya yok — sıfırdan kurulum fırsatı'
-      : !input.hasWebsite
-        ? 'Website yok'
-        : 'Dijital varlık mevcut',
+      : websiteOnlyOffline
+        ? 'Telefon kayıtlı, website yok. Sosyal medya durumu BİLİNMİYOR — ' +
+          'sitesi olmadığı için taranacak sayfa yok ve arama katmanı kapalı. ' +
+          'Aramadan önce Instagram\'da elle bakın.'
+        : noWebsite
+          ? 'Website yok'
+          : 'Dijital varlık mevcut',
   });
 
   // Olculemeyen bilesen (value === null) ne paya ne paydaya girer.

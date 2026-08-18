@@ -6,7 +6,7 @@ import {
   normalize,
   type DiscoveryCompany,
 } from '../src/lib/audit/social-discovery';
-import { searchProviderStatus } from '../src/lib/audit/search';
+import { getSearchProvider, searchProviderStatus } from '../src/lib/audit/search';
 
 /**
  * SOSYAL PROFIL DOGRULAMA
@@ -117,8 +117,13 @@ describe('Profil kimlik dogrulama', () => {
   });
 });
 
-describe('Arama saglayicisi yoksa', () => {
-  test('durum acikca bildirilir, tahmin uretilmez', () => {
+describe('Arama katmani opsiyoneldir', () => {
+  /**
+   * Google Custom Search JSON API yeni musterilere kapali. Bu yuzden arama
+   * ZORUNLU BAGIMLILIK DEGIL: yoklugu sistemi durdurmamali, hata firlatmamali
+   * ve skoru dusurmemeli. Yalnizca "bakilmadi" olarak isaretlenmeli.
+   */
+  test('yapilandirilmamis olmasi hata degil, bildirilen bir durumdur', () => {
     const previous = { cse: process.env.GOOGLE_CSE_ID, se: process.env.SEARCH_ENGINE_ID };
     delete process.env.GOOGLE_CSE_ID;
     delete process.env.SEARCH_ENGINE_ID;
@@ -126,7 +131,10 @@ describe('Arama saglayicisi yoksa', () => {
     try {
       const status = searchProviderStatus();
       assert.equal(status.available, false);
-      assert.ok(status.reason.includes('GOOGLE_CSE_ID'), 'eksik ayar adi soylenmeli');
+      assert.match(status.reason, /kapalı|opsiyonel/i, 'katmanin kapali oldugu soylenmeli');
+      assert.match(status.reason, /tahmin üretilmiyor/i, 'tahmin uretilmedigi belirtilmeli');
+      // Saglayici yoksa cagri null doner — istisna FIRLATMAZ.
+      assert.equal(getSearchProvider(), null);
     } finally {
       if (previous.cse) process.env.GOOGLE_CSE_ID = previous.cse;
       if (previous.se) process.env.SEARCH_ENGINE_ID = previous.se;

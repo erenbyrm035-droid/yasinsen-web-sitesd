@@ -28,6 +28,7 @@ function scoreFor(overrides: Partial<ScoreInput> = {}) {
     socialScore: 50,
     socialConfidence: 'low',
     hasSocialPresence: true,
+    socialPresenceKnown: true,
     ...overrides,
   });
 }
@@ -256,5 +257,61 @@ describe('Sosyal skor toplama', () => {
 
   test('olculebilir metrik olmadigi surece guven daima dusuk kalir', () => {
     assert.equal(aggregateSocialScore([socialAudit(95)]).confidence, 'low');
+  });
+});
+
+describe('Bakilmayan sosyal medya "yok" sayilmaz', () => {
+  /**
+   * Sitesi olmayan bir isletmede sosyal profil taranacak sayfa yoktur ve
+   * arama katmani kapalidir. Sistem bu durumda "website ve sosyal medya yok"
+   * diye kesin konusuyordu — oysa sosyal medyaya hic bakmamisti.
+   * Kanit yoklugu, yokluk kaniti degildir.
+   */
+  const noWebsiteLead = (socialPresenceKnown: boolean) =>
+    computeLeadScore({
+      segment: 'pilates_studio' as const,
+      district: 'Kadıköy',
+      employeeCount: null,
+      reviewCount: 400,
+      hasPhone: true,
+      isInstitutional: false,
+      websiteScore: 0,
+      websiteConfidence: 'high',
+      hasWebsite: false,
+      websiteBroken: false,
+      checks: [],
+      copyrightYear: null,
+      platform: null,
+      socialScore: null,
+      socialConfidence: 'none',
+      hasSocialPresence: false,
+      socialPresenceKnown,
+    });
+
+  test('bakilamadiysa "sosyal medya yok" iddiasi kurulmaz', () => {
+    const result = noWebsiteLead(false);
+    const c = result.breakdown.buyingIntentComponents.find((x) => x.key === 'activeButOffline');
+    assert.ok(c, 'bilesen bulunmali');
+    assert.doesNotMatch(
+      c!.detail,
+      /sosyal medya yok/i,
+      'bakilmadigi halde "sosyal medya yok" denmemeli',
+    );
+    assert.match(c!.detail, /BİLİNMİYOR/, 'durumun bilinmedigi acikca yazilmali');
+  });
+
+  test('bakildiysa ve gercekten yoksa tam puan verilir', () => {
+    const c = noWebsiteLead(true).breakdown.buyingIntentComponents.find(
+      (x) => x.key === 'activeButOffline',
+    );
+    assert.equal(c?.value, 100);
+    assert.match(c!.detail, /sosyal medya yok/i);
+  });
+
+  test('bakilamayan lead, bakilip dogrulanandan daha dusuk skor alir', () => {
+    assert.ok(
+      noWebsiteLead(false).purchaseScore < noWebsiteLead(true).purchaseScore,
+      'dogrulanmamis iddia, dogrulanmis olandan daha az agirlik tasimali',
+    );
   });
 });

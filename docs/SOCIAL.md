@@ -77,11 +77,19 @@ konum kelimeleri **stopword** — tek başlarına eşleşme sayılmaz. Yoksa
 
 ---
 
-## Kurulum: arama sağlayıcısı
+## Arama katmanı — OPSİYONEL, şu an KAPALI
 
-Arama **Google Programmable Search (Custom Search JSON API)** ile yapılır.
-Günde 100 sorgu ücretsiz. Yapılandırılmamışsa arama atlanır ve sonuç
-`not_searched` olarak işaretlenir — tahmin üretilmez.
+> **Google Custom Search JSON API yeni müşterilere kapalı.** Bu yüzden arama
+> katmanı **zorunlu bağımlılık değildir** ve varsayılan olarak devre dışıdır.
+> Sistem onsuz tam olarak çalışır.
+
+Arama yapılandırılmamışsa sonuç `not_searched` olarak işaretlenir — tahmin
+üretilmez ve **skor düşürülmez**. Sosyal profiller yalnızca yukarıdaki 1. ve
+2. kaynaktan (işletmenin kendi sitesi ve iç sayfaları) bulunur.
+
+Adapter kodu (`src/lib/audit/search.ts`) yerinde duruyor. Erişimi olan bir
+hesap ya da başka bir sağlayıcı eklenirse `SearchProvider` arayüzüne yeni bir
+sınıf yazmak yeterli; çağıran taraf değişmez.
 
 Neden arama motoru HTML'i kazınmıyor: Bing ve DuckDuckGo denendi ve bilinçli
 olarak reddedildi. Bing'in RSS çıktısı telif metninde açıkça "yalnızca

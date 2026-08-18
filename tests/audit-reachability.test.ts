@@ -223,6 +223,7 @@ describe('Skorlama — olculemeyen veri "kotu" sayilmaz', () => {
       socialScore: null,
       socialConfidence: 'none',
       hasSocialPresence: false,
+    socialPresenceKnown: true,
     };
 
     const result = computeLeadScore(base);
@@ -250,6 +251,7 @@ describe('Skorlama — olculemeyen veri "kotu" sayilmaz', () => {
       socialScore: null,
       socialConfidence: 'none' as const,
       hasSocialPresence: false,
+      socialPresenceKnown: true,
     };
 
     const unmeasured = computeLeadScore({

@@ -7,6 +7,7 @@ import { resolveCompanySocial, aggregateResolvedSocial } from '../social-resolut
 import { computeLeadScore } from './purchase-score';
 import { recommendOffer } from '../offer/engine';
 import { isInstitutional } from '../sources/overpass';
+import { searchProviderStatus } from '../audit/search';
 import type { LeadScoreResult, OfferRecommendation, Segment } from '../types';
 
 /**
@@ -63,6 +64,17 @@ export function scoreCompany(company: CompanyRow): ScoreCompanyResult | null {
     socialScore: social.score,
     socialConfidence: social.confidence,
     hasSocialPresence: socialAudits.length > 0,
+    /**
+     * Sosyal medyaya bakabildik mi?
+     *   * profil bulunduysa       -> evet, bakildi
+     *   * site denetlenebildiyse  -> evet, sayfalari tarandi
+     *   * arama katmani aciksa    -> evet, arandi
+     * Hicbiri yoksa bakilmamis demektir ve "sosyal medyasi yok" denemez.
+     */
+    socialPresenceKnown:
+      socialAudits.length > 0 ||
+      websiteAudit.status === 'ok' ||
+      searchProviderStatus().available,
   });
 
   const offer = recommendOffer({

@@ -14,12 +14,17 @@
  * aykiri ve her arayuz degisiminde kirilgan. Uretimde her gun calisacak bir
  * sistemi bunun uzerine kurmak dogru degil.
  *
- * Bu yuzden yalnizca RESMI, kotasi belli bir API kullanilir:
- * Google Programmable Search (Custom Search JSON API) — gunde 100 sorgu
- * ucretsiz. Kurulumu docs/SOCIAL.md'de.
+ * DURUM: ARAMA KATMANI OPSIYONEL VE SU AN KAPALI.
  *
- * Saglayici yapilandirilmamissa arama YAPILMAZ ve sonuc 'not_searched'
- * olarak isaretlenir. Uydurma profil uretilmez.
+ * Google Custom Search JSON API yeni musterilere kapali oldugu icin bu
+ * entegrasyon ZORUNLU BAGIMLILIK DEGILDIR ve varsayilan olarak devre disidir.
+ * Adapter kodu duruyor; erisimi olan bir hesap ya da baska bir saglayici
+ * eklenirse tek dosya degisimiyle acilir.
+ *
+ * Saglayici yapilandirilmamissa — ki normal durum budur — arama YAPILMAZ ve
+ * sonuc 'not_searched' olarak isaretlenir. Sistem calismaya devam eder:
+ * sosyal profiller isletmenin kendi sitesinden ve ic sayfalarindan bulunur.
+ * Hicbir asamada uydurma profil uretilmez ve arama yokluğu skoru dusurmez.
  */
 
 export interface SearchResult {
@@ -103,7 +108,7 @@ export function searchProviderStatus(): { available: boolean; reason: string } {
   return {
     available: false,
     reason:
-      'Arama sağlayıcısı yapılandırılmamış (GOOGLE_CSE_ID + GOOGLE_SEARCH_API_KEY gerekli) — ' +
-      'sosyal profil araması atlanıyor, tahmin üretilmiyor',
+      'Arama katmanı kapalı (opsiyonel) — sosyal profiller yalnızca işletmenin ' +
+      'kendi sitesinden bulunuyor, tahmin üretilmiyor',
   };
 }
