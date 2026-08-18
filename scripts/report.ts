@@ -36,6 +36,7 @@ interface Snapshot {
     website: number | null;
     social: number | null;
     location: string | null;
+    phone: string | null;
   }[];
 }
 
@@ -52,6 +53,7 @@ function toSnapshot(rows: LeadTableRow[]): Snapshot {
       website: r.websiteScore,
       social: r.socialScore,
       location: r.location,
+      phone: r.phone,
     })),
   };
 }
@@ -210,12 +212,12 @@ function buildMarkdown(current: Snapshot, previous: Snapshot | null): string {
   if (callList.length === 0) {
     lines.push('Bu çalıştırmada HOT ya da HIGH öncelikli lead çıkmadı.');
   } else {
-    lines.push('| # | İşletme | Konum | Website | Sosyal | Purchase | Önerilen hizmet |');
+    lines.push('| # | İşletme | Telefon | Konum | Website | Purchase | Önerilen hizmet |');
     lines.push('|---|---|---|---|---|---|---|');
     callList.forEach((l, i) => {
       lines.push(
-        `| ${i + 1} | **${l.company}** | ${l.location ?? '—'} | ${scoreCell(l.website)} | ` +
-          `${scoreCell(l.social)} | **${scoreCell(l.purchase)}** | ${l.offer ?? '—'} |`,
+        `| ${i + 1} | **${l.company}** | ${l.phone ?? '—'} | ${l.location ?? '—'} | ` +
+          `${scoreCell(l.website)} | **${scoreCell(l.purchase)}** | ${l.offer ?? '—'} |`,
       );
     });
   }

@@ -29,6 +29,8 @@ export interface LeadTableRow {
   industry: string | null;
   segment: string | null;
   location: string | null;
+  /** Places kaynagindan gelir — aranacak listenin en islevsel alani. */
+  phone: string | null;
   websiteScore: number | null;
   socialScore: number | null;
   socialConfidence: string | null;
@@ -48,6 +50,7 @@ interface LeadTableSqlRow {
   segment: string | null;
   district: string | null;
   city: string | null;
+  phone: string | null;
   status: string;
   decision_maker: string | null;
   decision_maker_title: string | null;
@@ -75,6 +78,7 @@ const LEAD_TABLE_SQL = `
     c.segment           AS segment,
     c.location_district AS district,
     c.location_city     AS city,
+    c.phone             AS phone,
     l.status            AS status,
     ct.full_name        AS decision_maker,
     ct.title            AS decision_maker_title,
@@ -113,6 +117,7 @@ export function listLeadTable(): LeadTableRow[] {
     industry: r.industry,
     segment: r.segment,
     location: [r.district, r.city].filter(Boolean).join(', ') || null,
+    phone: r.phone,
     websiteScore: r.website_score,
     socialScore: r.social_score,
     socialConfidence: r.social_confidence,

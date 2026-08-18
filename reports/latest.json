@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-18T07:24:49.000Z",
+  "generatedAt": "2026-08-18T09:04:35.618Z",
   "stats": {
     "totalLeads": 100,
     "analyzed": 100,
@@ -16,7 +16,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Zeytinburnu, İstanbul"
+      "location": "Zeytinburnu, İstanbul",
+      "phone": "0543 931 27 56"
     },
     {
       "id": 49,
@@ -26,7 +27,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0533 958 28 62"
     },
     {
       "id": 92,
@@ -36,7 +38,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bahçelievler, İstanbul"
+      "location": "Bahçelievler, İstanbul",
+      "phone": "0532 437 50 99"
     },
     {
       "id": 63,
@@ -46,7 +49,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bağcılar, İstanbul"
+      "location": "Bağcılar, İstanbul",
+      "phone": "0543 644 64 23"
     },
     {
       "id": 88,
@@ -56,7 +60,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Küçükçekmece, İstanbul"
+      "location": "Küçükçekmece, İstanbul",
+      "phone": "0534 062 20 96"
     },
     {
       "id": 58,
@@ -66,7 +71,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Beylikdüzü, İstanbul"
+      "location": "Beylikdüzü, İstanbul",
+      "phone": "0501 686 02 23"
     },
     {
       "id": 73,
@@ -76,7 +82,8 @@
       "offer": "Website",
       "website": 34,
       "social": 64,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0532 340 59 42"
     },
     {
       "id": 79,
@@ -86,7 +93,8 @@
       "offer": "Website",
       "website": 17,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0554 950 10 56"
     },
     {
       "id": 87,
@@ -96,7 +104,8 @@
       "offer": "Website",
       "website": 46,
       "social": 67,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "(0216) 550 23 24"
     },
     {
       "id": 44,
@@ -106,7 +115,8 @@
       "offer": "Website",
       "website": 13,
       "social": null,
-      "location": "Bakırköy, İstanbul"
+      "location": "Bakırköy, İstanbul",
+      "phone": "(0212) 557 50 50"
     },
     {
       "id": 64,
@@ -116,7 +126,8 @@
       "offer": "Website",
       "website": 10,
       "social": null,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0539 765 94 74"
     },
     {
       "id": 22,
@@ -126,7 +137,8 @@
       "offer": "Website",
       "website": 18,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "(0216) 349 85 95"
     },
     {
       "id": 36,
@@ -136,7 +148,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Gaziosmanpaşa, İstanbul"
+      "location": "Gaziosmanpaşa, İstanbul",
+      "phone": "(0212) 578 09 53"
     },
     {
       "id": 90,
@@ -146,7 +159,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "(0212) 585 34 34"
     },
     {
       "id": 74,
@@ -156,7 +170,8 @@
       "offer": "Website",
       "website": 18,
       "social": null,
-      "location": "Beyoğlu, İstanbul"
+      "location": "Beyoğlu, İstanbul",
+      "phone": "(0212) 245 12 55"
     },
     {
       "id": 81,
@@ -166,7 +181,8 @@
       "offer": "Website",
       "website": 14,
       "social": null,
-      "location": "Beylikdüzü, İstanbul"
+      "location": "Beylikdüzü, İstanbul",
+      "phone": "0546 431 83 90"
     },
     {
       "id": 26,
@@ -176,7 +192,8 @@
       "offer": "Website",
       "website": 51,
       "social": 64,
-      "location": "Gaziosmanpaşa, İstanbul"
+      "location": "Gaziosmanpaşa, İstanbul",
+      "phone": "0533 143 58 88"
     },
     {
       "id": 18,
@@ -186,7 +203,8 @@
       "offer": "Website",
       "website": 29,
       "social": null,
-      "location": "Bakırköy, İstanbul"
+      "location": "Bakırköy, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 21,
@@ -196,7 +214,8 @@
       "offer": "Website",
       "website": 39,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0542 348 02 16"
     },
     {
       "id": 9,
@@ -206,7 +225,8 @@
       "offer": "Website",
       "website": 32,
       "social": null,
-      "location": "Beşiktaş, İstanbul"
+      "location": "Beşiktaş, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 16,
@@ -216,7 +236,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Beşiktaş, İstanbul"
+      "location": "Beşiktaş, İstanbul",
+      "phone": "0850 241 3000"
     },
     {
       "id": 15,
@@ -226,7 +247,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 7,
@@ -236,7 +258,8 @@
       "offer": "Website",
       "website": 32,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 11,
@@ -246,7 +269,8 @@
       "offer": "Website",
       "website": 32,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 13,
@@ -256,7 +280,8 @@
       "offer": "Website",
       "website": 30,
       "social": null,
-      "location": "Beyoğlu, İstanbul"
+      "location": "Beyoğlu, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 45,
@@ -266,7 +291,8 @@
       "offer": "Website",
       "website": 32,
       "social": null,
-      "location": "Sarıyer, İstanbul"
+      "location": "Sarıyer, İstanbul",
+      "phone": "(0212) 330 48 68"
     },
     {
       "id": 55,
@@ -276,7 +302,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0539 887 88 81"
     },
     {
       "id": 95,
@@ -286,7 +313,8 @@
       "offer": "Website",
       "website": 53,
       "social": 67,
-      "location": "Ümraniye, İstanbul"
+      "location": "Ümraniye, İstanbul",
+      "phone": "(0216) 313 58 77"
     },
     {
       "id": 62,
@@ -296,7 +324,8 @@
       "offer": "Website",
       "website": 53,
       "social": 74,
-      "location": "Beşiktaş, İstanbul"
+      "location": "Beşiktaş, İstanbul",
+      "phone": "(0212) 258 90 00"
     },
     {
       "id": 66,
@@ -306,7 +335,8 @@
       "offer": "Website",
       "website": 48,
       "social": 85,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "(0212) 225 19 58"
     },
     {
       "id": 96,
@@ -316,7 +346,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Üsküdar, İstanbul"
+      "location": "Üsküdar, İstanbul",
+      "phone": "0533 510 02 24"
     },
     {
       "id": 82,
@@ -326,7 +357,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0543 316 06 73"
     },
     {
       "id": 91,
@@ -336,7 +368,8 @@
       "offer": "Website",
       "website": 21,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "0850 802 6518"
     },
     {
       "id": 33,
@@ -346,7 +379,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Beyoğlu, İstanbul"
+      "location": "Beyoğlu, İstanbul",
+      "phone": "(0212) 249 53 47"
     },
     {
       "id": 4,
@@ -356,7 +390,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 31,
@@ -366,7 +401,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 10,
@@ -376,7 +412,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Ümraniye, İstanbul"
+      "location": "Ümraniye, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 23,
@@ -386,7 +423,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0536 326 99 43"
     },
     {
       "id": 47,
@@ -396,7 +434,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0533 203 86 51"
     },
     {
       "id": 68,
@@ -406,7 +445,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bahçelievler, İstanbul"
+      "location": "Bahçelievler, İstanbul",
+      "phone": "0501 366 26 52"
     },
     {
       "id": 93,
@@ -416,7 +456,8 @@
       "offer": "Website",
       "website": 48,
       "social": 56,
-      "location": "Üsküdar, İstanbul"
+      "location": "Üsküdar, İstanbul",
+      "phone": "0553 597 42 12"
     },
     {
       "id": 8,
@@ -426,7 +467,8 @@
       "offer": "Website",
       "website": 33,
       "social": null,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 5,
@@ -436,7 +478,8 @@
       "offer": "Website",
       "website": 33,
       "social": null,
-      "location": "Başakşehir, İstanbul"
+      "location": "Başakşehir, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 99,
@@ -446,7 +489,8 @@
       "offer": "Website",
       "website": 42,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0539 701 39 94"
     },
     {
       "id": 78,
@@ -456,7 +500,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0539 453 04 44"
     },
     {
       "id": 94,
@@ -466,7 +511,8 @@
       "offer": "Website",
       "website": 39,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0537 987 96 94"
     },
     {
       "id": 20,
@@ -476,7 +522,8 @@
       "offer": "Website",
       "website": 31,
       "social": null,
-      "location": "Bağcılar, İstanbul"
+      "location": "Bağcılar, İstanbul",
+      "phone": "0850 532 7000"
     },
     {
       "id": 84,
@@ -486,7 +533,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Esenler, İstanbul"
+      "location": "Esenler, İstanbul",
+      "phone": "0531 709 73 58"
     },
     {
       "id": 42,
@@ -496,7 +544,8 @@
       "offer": "Website + Social Media",
       "website": 56,
       "social": 90,
-      "location": "Maltepe, İstanbul"
+      "location": "Maltepe, İstanbul",
+      "phone": "(0216) 504 76 26"
     },
     {
       "id": 54,
@@ -506,7 +555,8 @@
       "offer": "Website",
       "website": 42,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0531 712 33 72"
     },
     {
       "id": 43,
@@ -516,7 +566,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bahçelievler, İstanbul"
+      "location": "Bahçelievler, İstanbul",
+      "phone": "0530 871 17 96"
     },
     {
       "id": 1,
@@ -526,7 +577,8 @@
       "offer": "Website",
       "website": 36,
       "social": null,
-      "location": "Ümraniye, İstanbul"
+      "location": "Ümraniye, İstanbul",
+      "phone": "(0216) 523 33 33"
     },
     {
       "id": 12,
@@ -536,7 +588,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Kartal, İstanbul"
+      "location": "Kartal, İstanbul",
+      "phone": "(0216) 309 94 94"
     },
     {
       "id": 35,
@@ -546,7 +599,8 @@
       "offer": "Website + Social Media",
       "website": 64,
       "social": 90,
-      "location": "Ataşehir, İstanbul"
+      "location": "Ataşehir, İstanbul",
+      "phone": "(0216) 706 54 28"
     },
     {
       "id": 14,
@@ -556,7 +610,8 @@
       "offer": "Website",
       "website": 37,
       "social": null,
-      "location": "Zeytinburnu, İstanbul"
+      "location": "Zeytinburnu, İstanbul",
+      "phone": "0531 434 73 61"
     },
     {
       "id": 41,
@@ -566,7 +621,8 @@
       "offer": "Website",
       "website": 37,
       "social": null,
-      "location": "Maltepe, İstanbul"
+      "location": "Maltepe, İstanbul",
+      "phone": "0505 635 58 53"
     },
     {
       "id": 39,
@@ -576,7 +632,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bayrampaşa, İstanbul"
+      "location": "Bayrampaşa, İstanbul",
+      "phone": "0530 772 32 62"
     },
     {
       "id": 75,
@@ -586,7 +643,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Bağcılar, İstanbul"
+      "location": "Bağcılar, İstanbul",
+      "phone": "(0212) 462 31 42"
     },
     {
       "id": 6,
@@ -596,7 +654,8 @@
       "offer": "Website",
       "website": 35,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "(0212) 586 01 09"
     },
     {
       "id": 57,
@@ -606,7 +665,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "0538 027 71 09"
     },
     {
       "id": 67,
@@ -616,7 +676,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "0850 838 0848"
     },
     {
       "id": 17,
@@ -626,7 +687,8 @@
       "offer": "Website",
       "website": 0,
       "social": null,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "0544 733 54 63"
     },
     {
       "id": 29,
@@ -636,7 +698,8 @@
       "offer": "Website + Social Media",
       "website": 59,
       "social": 67,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "(0216) 336 00 50"
     },
     {
       "id": 27,
@@ -646,7 +709,8 @@
       "offer": "Website + Social Media",
       "website": 58,
       "social": 56,
-      "location": "Pendik, İstanbul"
+      "location": "Pendik, İstanbul",
+      "phone": "0533 440 36 34"
     },
     {
       "id": 28,
@@ -656,7 +720,8 @@
       "offer": "Website + Social Media",
       "website": 61,
       "social": 67,
-      "location": "Beyoğlu, İstanbul"
+      "location": "Beyoğlu, İstanbul",
+      "phone": "0533 410 59 84"
     },
     {
       "id": 56,
@@ -666,7 +731,8 @@
       "offer": "Website + Social Media",
       "website": 65,
       "social": 67,
-      "location": "Esenler, İstanbul"
+      "location": "Esenler, İstanbul",
+      "phone": null
     },
     {
       "id": 72,
@@ -676,7 +742,8 @@
       "offer": "Website + Social Media",
       "website": 61,
       "social": 67,
-      "location": "Pendik, İstanbul"
+      "location": "Pendik, İstanbul",
+      "phone": "0530 739 22 10"
     },
     {
       "id": 46,
@@ -686,7 +753,8 @@
       "offer": "Website + Social Media",
       "website": 58,
       "social": 85,
-      "location": "Bayrampaşa, İstanbul"
+      "location": "Bayrampaşa, İstanbul",
+      "phone": "(0212) 561 27 27"
     },
     {
       "id": 19,
@@ -696,7 +764,8 @@
       "offer": "Website + Social Media",
       "website": 67,
       "social": 64,
-      "location": "Güngören, İstanbul"
+      "location": "Güngören, İstanbul",
+      "phone": "(0212) 482 48 88"
     },
     {
       "id": 34,
@@ -706,7 +775,8 @@
       "offer": "Website + Social Media",
       "website": 67,
       "social": 64,
-      "location": "Bahçelievler, İstanbul"
+      "location": "Bahçelievler, İstanbul",
+      "phone": "0532 761 25 41"
     },
     {
       "id": 71,
@@ -716,7 +786,8 @@
       "offer": "Social Media",
       "website": 55,
       "social": null,
-      "location": "Ümraniye, İstanbul"
+      "location": "Ümraniye, İstanbul",
+      "phone": "0532 351 77 37"
     },
     {
       "id": 25,
@@ -726,7 +797,8 @@
       "offer": "Website + Social Media",
       "website": 58,
       "social": 85,
-      "location": "Çekmeköy, İstanbul"
+      "location": "Çekmeköy, İstanbul",
+      "phone": "(0216) 499 00 01"
     },
     {
       "id": 24,
@@ -736,7 +808,8 @@
       "offer": "Website + Social Media",
       "website": 62,
       "social": 56,
-      "location": "Fatih, İstanbul"
+      "location": "Fatih, İstanbul",
+      "phone": "0544 733 54 63"
     },
     {
       "id": 60,
@@ -746,7 +819,8 @@
       "offer": "Website + Automation",
       "website": 71,
       "social": 56,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "0505 446 91 90"
     },
     {
       "id": 37,
@@ -756,7 +830,8 @@
       "offer": "Website",
       "website": 50,
       "social": null,
-      "location": "Esenler, İstanbul"
+      "location": "Esenler, İstanbul",
+      "phone": "0533 370 50 36"
     },
     {
       "id": 61,
@@ -766,7 +841,8 @@
       "offer": "Website + Social Media",
       "website": 60,
       "social": 85,
-      "location": "Bakırköy, İstanbul"
+      "location": "Bakırköy, İstanbul",
+      "phone": "(0212) 466 00 74"
     },
     {
       "id": 80,
@@ -776,7 +852,8 @@
       "offer": "Website + Social Media",
       "website": 68,
       "social": 85,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0532 418 49 19"
     },
     {
       "id": 83,
@@ -786,7 +863,8 @@
       "offer": "Website + Social Media",
       "website": 61,
       "social": 64,
-      "location": "Pendik, İstanbul"
+      "location": "Pendik, İstanbul",
+      "phone": "0505 856 07 80"
     },
     {
       "id": 50,
@@ -796,7 +874,8 @@
       "offer": "Website + Social Media",
       "website": 55,
       "social": 64,
-      "location": "Bahçelievler, İstanbul"
+      "location": "Bahçelievler, İstanbul",
+      "phone": "0532 761 25 41"
     },
     {
       "id": 100,
@@ -806,7 +885,8 @@
       "offer": "Website + Social Media",
       "website": 74,
       "social": 85,
-      "location": "Maltepe, İstanbul"
+      "location": "Maltepe, İstanbul",
+      "phone": "0538 273 69 99"
     },
     {
       "id": 69,
@@ -816,7 +896,8 @@
       "offer": "Website + Social Media",
       "website": 61,
       "social": 74,
-      "location": "Maltepe, İstanbul"
+      "location": "Maltepe, İstanbul",
+      "phone": "0530 900 29 59"
     },
     {
       "id": 70,
@@ -826,7 +907,8 @@
       "offer": "Website + Automation",
       "website": 76,
       "social": 64,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "(0212) 266 13 47"
     },
     {
       "id": 65,
@@ -836,7 +918,8 @@
       "offer": "Website + Automation",
       "website": 77,
       "social": 64,
-      "location": "Beşiktaş, İstanbul"
+      "location": "Beşiktaş, İstanbul",
+      "phone": "(0212) 264 51 55"
     },
     {
       "id": 89,
@@ -846,7 +929,8 @@
       "offer": "Website + Automation",
       "website": 80,
       "social": 85,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0536 396 08 91"
     },
     {
       "id": 52,
@@ -856,7 +940,8 @@
       "offer": "Website + Automation",
       "website": 87,
       "social": 67,
-      "location": "Sarıyer, İstanbul"
+      "location": "Sarıyer, İstanbul",
+      "phone": "0552 432 90 40"
     },
     {
       "id": 2,
@@ -866,7 +951,8 @@
       "offer": "Social Media",
       "website": 70,
       "social": null,
-      "location": "Ataşehir, İstanbul"
+      "location": "Ataşehir, İstanbul",
+      "phone": "(0216) 575 54 54"
     },
     {
       "id": 48,
@@ -876,7 +962,8 @@
       "offer": "Website + Social Media",
       "website": 69,
       "social": 67,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0532 399 97 44"
     },
     {
       "id": 30,
@@ -886,7 +973,8 @@
       "offer": "Social Media",
       "website": 63,
       "social": null,
-      "location": "Kadıköy, İstanbul"
+      "location": "Kadıköy, İstanbul",
+      "phone": "(0216) 550 00 03"
     },
     {
       "id": 85,
@@ -896,7 +984,8 @@
       "offer": "Social Media",
       "website": 59,
       "social": null,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "(0212) 278 20 25"
     },
     {
       "id": 38,
@@ -906,7 +995,8 @@
       "offer": "Ads / Conversion Optimization",
       "website": 87,
       "social": 90,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0532 626 16 31"
     },
     {
       "id": 32,
@@ -916,7 +1006,8 @@
       "offer": "Website + Social Media",
       "website": 68,
       "social": 74,
-      "location": "Başakşehir, İstanbul"
+      "location": "Başakşehir, İstanbul",
+      "phone": "0506 909 25 57"
     },
     {
       "id": 40,
@@ -926,7 +1017,8 @@
       "offer": "Website + Automation",
       "website": 74,
       "social": 56,
-      "location": "Kağıthane, İstanbul"
+      "location": "Kağıthane, İstanbul",
+      "phone": "0540 547 12 34"
     },
     {
       "id": 76,
@@ -936,7 +1028,8 @@
       "offer": "Website + Automation",
       "website": 80,
       "social": 56,
-      "location": "Üsküdar, İstanbul"
+      "location": "Üsküdar, İstanbul",
+      "phone": "0540 290 12 34"
     },
     {
       "id": 98,
@@ -946,7 +1039,8 @@
       "offer": "Social Media",
       "website": 72,
       "social": null,
-      "location": "Şişli, İstanbul"
+      "location": "Şişli, İstanbul",
+      "phone": "0507 937 24 34"
     },
     {
       "id": 59,
@@ -956,7 +1050,8 @@
       "offer": "Website + Automation",
       "website": 80,
       "social": 56,
-      "location": "Eyüpsultan, İstanbul"
+      "location": "Eyüpsultan, İstanbul",
+      "phone": "0540 547 12 34"
     },
     {
       "id": 97,
@@ -966,7 +1061,8 @@
       "offer": "Website + Automation",
       "website": 86,
       "social": 64,
-      "location": "Ümraniye, İstanbul"
+      "location": "Ümraniye, İstanbul",
+      "phone": "(0216) 606 30 30"
     },
     {
       "id": 86,
@@ -976,7 +1072,8 @@
       "offer": "Website + Automation",
       "website": 87,
       "social": 64,
-      "location": "Kartal, İstanbul"
+      "location": "Kartal, İstanbul",
+      "phone": "0537 727 57 80"
     },
     {
       "id": 53,
@@ -986,7 +1083,8 @@
       "offer": "Website + Automation",
       "website": 76,
       "social": 83,
-      "location": "Esenyurt, İstanbul"
+      "location": "Esenyurt, İstanbul",
+      "phone": "0532 745 74 63"
     },
     {
       "id": 3,
@@ -996,7 +1094,8 @@
       "offer": "Website + Automation",
       "website": 81,
       "social": 90,
-      "location": "Esenyurt, İstanbul"
+      "location": "Esenyurt, İstanbul",
+      "phone": "(0212) 852 39 05"
     },
     {
       "id": 77,
@@ -1006,7 +1105,8 @@
       "offer": "Social Media",
       "website": 83,
       "social": null,
-      "location": "Ataşehir, İstanbul"
+      "location": "Ataşehir, İstanbul",
+      "phone": "(0216) 472 05 55"
     }
   ]
 }

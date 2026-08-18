@@ -62,6 +62,7 @@ export default function DashboardPage() {
               <thead className="bg-[#161d33] text-left text-xs uppercase tracking-wider text-[#8b94ad]">
                 <tr>
                   <th className="px-5 py-3 font-medium">Company</th>
+                  <th className="px-4 py-3 font-medium">Telefon</th>
                   <th className="px-4 py-3 font-medium">Decision Maker</th>
                   <th className="px-4 py-3 font-medium">Industry</th>
                   <th className="px-4 py-3 font-medium">Location</th>
@@ -85,6 +86,18 @@ export default function DashboardPage() {
                       <div className="mt-0.5 text-xs text-[#6b7592]">
                         {hostnameOf(lead.website)}
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {lead.phone ? (
+                        <a
+                          href={`tel:${lead.phone.replace(/\s/g, '')}`}
+                          className="font-mono text-sm text-[#5b8cff] underline-offset-4 hover:underline"
+                        >
+                          {lead.phone}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-[#6b7592]">veri yok</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {lead.decisionMaker ? (
