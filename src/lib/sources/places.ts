@@ -33,6 +33,8 @@ const FIELD_MASK = [
   'places.primaryType',
   'places.types',
   'places.businessStatus',
+  // Resmi harita linki — kendimiz arama sorgusu kurmaktan cok daha dogru.
+  'places.googleMapsUri',
   'places.location',
   'nextPageToken',
 ].join(',');
@@ -68,6 +70,7 @@ const DISTRICTS = [
 
 interface PlaceResult {
   id?: string;
+  googleMapsUri?: string;
   displayName?: { text?: string };
   formattedAddress?: string;
   addressComponents?: { longText?: string; shortText?: string; types?: string[] }[];
@@ -152,6 +155,8 @@ function toCompany(place: PlaceResult, cityLabel: string): DiscoveredCompany | n
     rating: place.rating ?? null,
     reviewCount: place.userRatingCount ?? null,
     source: 'places',
+    googlePlaceId: place.id,
+    mapsUri: place.googleMapsUri ?? null,
     sourceRef: place.id,
     raw: place,
     // Places karar verici vermez.

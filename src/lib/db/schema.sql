@@ -28,6 +28,10 @@ CREATE TABLE IF NOT EXISTS companies (
   phone             TEXT,
   rating            REAL,             -- Google puani (yalnizca Places kaynagi)
   review_count      INTEGER,          -- yorum sayisi — gercek musteri hacmi sinyali
+  -- Google Place ID: en guclu mukerrer kimligi. Yalnizca Places doldurur.
+  google_place_id   TEXT,
+  -- Places'in dondurdugu resmi harita linki (arama sorgusu degil).
+  maps_uri          TEXT,
   source            TEXT    NOT NULL, -- 'osm' | 'apollo'
   source_ref        TEXT    NOT NULL, -- 'node/2585358357' | apollo org id
   raw               TEXT,             -- JSON: kaynak kaydin ham hali

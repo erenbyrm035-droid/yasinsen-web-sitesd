@@ -112,6 +112,9 @@ function personToCompany(person: ApolloPerson): DiscoveredCompany | null {
     // OSM/Apollo puan ve yorum verisi tasimaz — Places doldurur.
     rating: null,
     reviewCount: null,
+    // Bu kaynak Google Place ID vermez — uydurulmaz, null kalir.
+    googlePlaceId: null,
+    mapsUri: null,
     source: 'apollo',
     sourceRef: org.id ?? `person:${person.id ?? org.name}`,
     raw: person,

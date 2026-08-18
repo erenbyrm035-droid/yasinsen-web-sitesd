@@ -16,6 +16,8 @@ export interface CompanyRow {
   phone: string | null;
   rating: number | null;
   review_count: number | null;
+  google_place_id: string | null;
+  maps_uri: string | null;
   source: string;
   source_ref: string;
   raw: string | null;
@@ -84,6 +86,14 @@ export function findDuplicateCompany(c: DiscoveredCompany): CompanyRow | undefin
   const exact = getCompanyBySourceRef(c.source, c.sourceRef);
   if (exact) return exact;
 
+  // Google Place ID: farkli kaynaklar arasinda da gecerli, en guclu kimlik.
+  if (c.googlePlaceId) {
+    const byPlaceId = db
+      .prepare('SELECT * FROM companies WHERE google_place_id = ?')
+      .get(c.googlePlaceId) as CompanyRow | undefined;
+    if (byPlaceId) return byPlaceId;
+  }
+
   if (c.domain) {
     const byDomain = db.prepare('SELECT * FROM companies WHERE domain = ?').get(c.domain) as
       | CompanyRow
@@ -137,6 +147,8 @@ export function upsertCompany(c: DiscoveredCompany): number {
          phone             = COALESCE(@phone, phone),
          rating            = COALESCE(@rating, rating),
          review_count      = COALESCE(@reviewCount, review_count),
+         google_place_id   = COALESCE(@googlePlaceId, google_place_id),
+         maps_uri          = COALESCE(@mapsUri, maps_uri),
          updated_at        = datetime('now')
        WHERE id = @id`,
     ).run({
@@ -145,6 +157,7 @@ export function upsertCompany(c: DiscoveredCompany): number {
       district: c.locationDistrict, lat: c.lat, lon: c.lon,
       industry: c.industry, employeeCount: c.employeeCount, phone: c.phone,
       rating: c.rating, reviewCount: c.reviewCount,
+      googlePlaceId: c.googlePlaceId, mapsUri: c.mapsUri,
     });
     return duplicate.id;
   }
@@ -152,11 +165,11 @@ export function upsertCompany(c: DiscoveredCompany): number {
     INSERT INTO companies (
       name, website, domain, location_city, location_district, lat, lon,
       industry, segment, employee_count, phone, rating, review_count,
-      source, source_ref, raw
+      google_place_id, maps_uri, source, source_ref, raw
     ) VALUES (
       @name, @website, @domain, @city, @district, @lat, @lon,
       @industry, @segment, @employeeCount, @phone, @rating, @reviewCount,
-      @source, @sourceRef, @raw
+      @googlePlaceId, @mapsUri, @source, @sourceRef, @raw
     )
     ON CONFLICT (source, source_ref) DO UPDATE SET
       name              = excluded.name,
@@ -172,6 +185,8 @@ export function upsertCompany(c: DiscoveredCompany): number {
       segment           = excluded.segment,
       employee_count    = COALESCE(excluded.employee_count, companies.employee_count),
       phone             = COALESCE(excluded.phone, companies.phone),
+      google_place_id   = COALESCE(excluded.google_place_id, companies.google_place_id),
+      maps_uri          = COALESCE(excluded.maps_uri, companies.maps_uri),
       raw               = excluded.raw,
       updated_at        = datetime('now')
     RETURNING id
@@ -191,6 +206,8 @@ export function upsertCompany(c: DiscoveredCompany): number {
     phone: c.phone,
     rating: c.rating,
     reviewCount: c.reviewCount,
+    googlePlaceId: c.googlePlaceId,
+    mapsUri: c.mapsUri,
     source: c.source,
     sourceRef: c.sourceRef,
     raw: JSON.stringify(c.raw ?? null),

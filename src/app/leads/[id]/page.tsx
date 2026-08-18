@@ -114,9 +114,20 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         ) : (
           <span className="text-xs text-[#6b7592]">sosyal profil yok</span>
         )}
-        {sales?.mapsUrl ? (
-          <a href={sales.mapsUrl} target="_blank" rel="noreferrer noopener"
-             className="text-[#5b8cff] underline-offset-4 hover:underline">Google Maps ↗</a>
+        {sales ? (
+          <a
+            href={sales.mapsUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-[#5b8cff] underline-offset-4 hover:underline"
+            title={
+              sales.mapsExact
+                ? 'Google Place ID ile tam kayda gider'
+                : 'Bu kaynakta Place ID yok — ad ve ilçeyle arama açar, doğru işletme olduğunu kontrol edin'
+            }
+          >
+            Google Maps {sales.mapsExact ? '↗' : '(arama) ↗'}
+          </a>
         ) : null}
         {company.rating !== null && company.rating !== undefined ? (
           <span className="text-[#b8c0d4]">

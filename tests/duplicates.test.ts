@@ -32,6 +32,8 @@ function company(overrides: Partial<DiscoveredCompany> = {}): DiscoveredCompany 
     employeeCount: null,
     phone: '0533 143 58 88',
     rating: null, reviewCount: null,
+    googlePlaceId: null,
+    mapsUri: null,
     source: 'places',
     sourceRef: 'place-1',
     raw: {},
@@ -131,5 +133,46 @@ describe('Mukerrer isletme olusturulmaz', () => {
       }),
     );
     assert.equal(other, undefined);
+  });
+});
+
+describe('Google Place ID', () => {
+  test('Place ID farkli kaynaklar arasinda da mukerreri yakalar', () => {
+    // Ayni isletme once Places'ten, sonra baska bir sorgudan farkli bir
+    // source_ref ile gelirse yine tek kayit olmali.
+    const first = upsertCompany(
+      company({ googlePlaceId: 'ChIJ_TEST_1', website: null, domain: null, phone: null }),
+    );
+    const second = upsertCompany(
+      company({
+        googlePlaceId: 'ChIJ_TEST_1',
+        source: 'places', sourceRef: 'baska-ref',
+        name: 'Farkli Yazilmis Isim',
+        website: null, domain: null, phone: null,
+        locationDistrict: 'Beşiktaş',
+      }),
+    );
+    assert.equal(second, first, 'ayni Place ID tek kayit olmali');
+  });
+
+  test('Place ID mukerrer birlestirmede kaybolmaz', () => {
+    upsertCompany(company({ googlePlaceId: 'ChIJ_KEEP', mapsUri: 'https://maps.app.goo.gl/x' }));
+    // Ayni isletme OSM'den geliyor: Place ID tasimıyor ama mevcut olan silinmemeli.
+    upsertCompany(
+      company({ source: 'osm', sourceRef: 'node/5000', googlePlaceId: null, mapsUri: null }),
+    );
+
+    const row = getDb().prepare('SELECT * FROM companies').get() as {
+      google_place_id: string | null;
+      maps_uri: string | null;
+    };
+    assert.equal(row.google_place_id, 'ChIJ_KEEP');
+    assert.equal(row.maps_uri, 'https://maps.app.goo.gl/x');
+  });
+
+  test('Place ID vermeyen kaynak uydurmaz', () => {
+    upsertCompany(company({ source: 'osm', sourceRef: 'node/6000', googlePlaceId: null, mapsUri: null }));
+    const row = getDb().prepare('SELECT * FROM companies').get() as { google_place_id: string | null };
+    assert.equal(row.google_place_id, null, 'OSM Place ID vermez — uydurulmamali');
   });
 });

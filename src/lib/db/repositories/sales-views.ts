@@ -21,9 +21,13 @@ export interface SalesLeadRow {
   location: string | null;
   phone: string | null;
   website: string | null;
-  mapsUrl: string | null;
   rating: number | null;
   reviewCount: number | null;
+  googlePlaceId: string | null;
+  /** Harita linki — resmi kayit varsa o, yoksa arama sorgusu. */
+  mapsUrl: string;
+  /** Link gercek kayda mi gidiyor, yoksa arama sonucuna mi? */
+  mapsExact: boolean;
   decisionMaker: string | null;
   decisionMakerTitle: string | null;
   websiteScore: number | null;
@@ -69,6 +73,7 @@ const SALES_LEAD_SQL = `
     l.id AS lead_id, c.id AS company_id, c.name AS company,
     c.segment, c.industry, c.location_district AS district, c.location_city AS city,
     c.phone, c.website, c.rating, c.review_count,
+    c.google_place_id, c.maps_uri,
     ct.full_name AS decision_maker, ct.title AS decision_maker_title,
     a.score AS website_score, a.status AS website_status, a.manual_review,
     bs.score AS social_score, bs.profile_url AS social_profile,
@@ -99,6 +104,8 @@ interface SqlRow {
   website: string | null;
   rating: number | null;
   review_count: number | null;
+  google_place_id: string | null;
+  maps_uri: string | null;
   decision_maker: string | null;
   decision_maker_title: string | null;
   website_score: number | null;
@@ -118,6 +125,28 @@ interface SqlRow {
   last_call_notes: string | null;
 }
 
+/**
+ * Harita linki, guclu kaynaktan zayifa:
+ *
+ *   1. Places'in dondurdugu resmi googleMapsUri  -> tam kayit, tek dogru yer
+ *   2. Place ID ile kayit sorgusu                -> yine tam kayit
+ *   3. Ad + ilce arama sorgusu                   -> yalnizca son care
+ *
+ * 3. secenek yanlis isletmeye gotur ebilir; bu yuzden yalnizca elde kimlik
+ * yokken kullanilir (OSM kaynakli lead'ler).
+ */
+function mapsUrlFor(r: SqlRow): string {
+  if (r.maps_uri) return r.maps_uri;
+  if (r.google_place_id) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      r.company,
+    )}&query_place_id=${encodeURIComponent(r.google_place_id)}`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    [r.company, r.district, r.city].filter(Boolean).join(' '),
+  )}`;
+}
+
 function toRow(r: SqlRow): SalesLeadRow {
   return {
     leadId: r.lead_id,
@@ -130,10 +159,9 @@ function toRow(r: SqlRow): SalesLeadRow {
     location: [r.district, r.city].filter(Boolean).join(', ') || null,
     phone: r.phone,
     website: r.website,
-    // Google Maps araması: place id saklanmadıysa ad + ilçe ile arama linki.
-    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      [r.company, r.district, r.city].filter(Boolean).join(' '),
-    )}`,
+    googlePlaceId: r.google_place_id,
+    mapsUrl: mapsUrlFor(r),
+    mapsExact: Boolean(r.maps_uri || r.google_place_id),
     rating: r.rating,
     reviewCount: r.review_count,
     decisionMaker: r.decision_maker,

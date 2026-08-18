@@ -179,6 +179,9 @@ function toCompany(el: OverpassElement, city: string): DiscoveredCompany | null 
     // OSM/Apollo puan ve yorum verisi tasimaz — Places doldurur.
     rating: null,
     reviewCount: null,
+    // Bu kaynak Google Place ID vermez — uydurulmaz, null kalir.
+    googlePlaceId: null,
+    mapsUri: null,
     source: 'osm',
     sourceRef: `${el.type}/${el.id}`,
     raw: tags,

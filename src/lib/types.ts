@@ -67,6 +67,10 @@ export interface DiscoveredCompany {
   rating: number | null;
   /** Yorum sayisi — gercek musteri hacmi sinyali. Yalnizca Places. */
   reviewCount: number | null;
+  /** Google Place ID — en guclu kimlik. Yalnizca Places kaynagi doldurur. */
+  googlePlaceId: string | null;
+  /** Places'in dondurdugu RESMI harita linki. Arama sorgusu degil, tam kayit. */
+  mapsUri: string | null;
   source: string;
   /** Kaynak sistemdeki benzersiz kimlik — idempotent upsert icin. */
   sourceRef: string;

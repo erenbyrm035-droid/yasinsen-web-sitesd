@@ -38,6 +38,8 @@ export function getDb(): Database.Database {
 const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
   { table: 'companies', column: 'rating', definition: 'REAL' },
   { table: 'companies', column: 'review_count', definition: 'INTEGER' },
+  { table: 'companies', column: 'google_place_id', definition: 'TEXT' },
+  { table: 'companies', column: 'maps_uri', definition: 'TEXT' },
   { table: 'website_audits', column: 'status', definition: "TEXT NOT NULL DEFAULT 'ok'" },
   { table: 'website_audits', column: 'reason', definition: 'TEXT' },
   { table: 'website_audits', column: 'manual_review', definition: 'INTEGER NOT NULL DEFAULT 0' },
