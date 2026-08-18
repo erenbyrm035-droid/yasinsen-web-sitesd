@@ -25,3 +25,5 @@ next-env.d.ts
 
 # Radar ciktisi uretilen dosyadir; kabuk (radar-shell.html) surumlenir.
 scratchpad/viva-lead-radar.html
+scratchpad/app-data.json
+scratchpad/viva-saha.html

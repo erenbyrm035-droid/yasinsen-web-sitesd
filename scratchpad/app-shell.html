@@ -1,0 +1,910 @@
+<title>Viva Saha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ---------------------------------------------------------------------------
+   Jetonlar. Koyu tema birincil (uygulamanin kimligi), acik tema ayrica
+   tasarlandi — ters cevirme degil. Uc durum da kapsanir: acik, koyu,
+   ve hicbir isaret tasimayan "sistem" durumu.
+   --------------------------------------------------------------------------- */
+:root {
+  --ink: #f6f7fb;        /* zemin */
+  --surface: #ffffff;
+  --surface-2: #eef1f7;
+  --line: #dde2ee;
+  --line-soft: #e8ecf4;
+  --text: #131722;
+  --text-2: #4d5568;
+  --text-3: #7b849b;
+  --accent: #3563d6;
+  --accent-soft: #e5ecfd;
+  --hot: #d93a2b;
+  --high: #b26a00;
+  --medium: #1c7a90;
+  --low: #6b7592;
+  --good: #1a7f47;
+  --warn-bg: #fdf2e0;
+  --warn-fg: #8a5a12;
+  --shadow: 0 1px 2px rgba(19,23,34,.06), 0 8px 24px rgba(19,23,34,.06);
+  --sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #0b0f19;
+    --surface: #11172a;
+    --surface-2: #161d33;
+    --line: #232b45;
+    --line-soft: #1b2238;
+    --text: #e8ecf5;
+    --text-2: #b8c0d4;
+    --text-3: #8b94ad;
+    --accent: #5b8cff;
+    --accent-soft: #1a2540;
+    --hot: #ff6a5d;
+    --high: #e0a458;
+    --medium: #58c6db;
+    --low: #7d879f;
+    --good: #55d98a;
+    --warn-bg: #33260f;
+    --warn-fg: #e0a458;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #0b0f19; --surface: #11172a; --surface-2: #161d33;
+  --line: #232b45; --line-soft: #1b2238;
+  --text: #e8ecf5; --text-2: #b8c0d4; --text-3: #8b94ad;
+  --accent: #5b8cff; --accent-soft: #1a2540;
+  --hot: #ff6a5d; --high: #e0a458; --medium: #58c6db; --low: #7d879f;
+  --good: #55d98a; --warn-bg: #33260f; --warn-fg: #e0a458;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  /* Artefakt kendi zeminini boyamazsa host'un temasini odunc alir. */
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 88px;
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 14px; }
+
+/* ---- Ust bant ---- */
+header {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.hbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0 10px; }
+.brand { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.brand span { color: var(--text-3); font-weight: 500; }
+.stamp { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); text-align: right; line-height: 1.35; }
+.stamp b { color: var(--text-2); font-weight: 500; }
+
+/* ---- Sekmeler ---- */
+.tabs { display: flex; gap: 4px; padding-bottom: 10px; }
+.tab {
+  flex: 1; padding: 8px 6px; border: 1px solid var(--line); border-radius: 9px;
+  background: var(--surface); color: var(--text-2);
+  font-size: 13px; font-weight: 500; text-align: center;
+}
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tab b { font-family: var(--mono); font-weight: 600; }
+
+/* ---- KPI ---- */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 10px; }
+.kpi .k { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); }
+.kpi .v { font-family: var(--mono); font-size: 21px; font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+.sect { margin: 20px 0 9px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.sect h2 { font-size: 13px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.sect .note { font-size: 11px; color: var(--text-3); text-align: right; }
+
+/* ---- Lead karti ----
+   Oncelik SOL KENAR SERIDIYLE kodlanir: renk tek basina tasimiyor,
+   kalinlik da degisiyor. Ekranda tararken goz once serite takilir. */
+.card {
+  position: relative;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px 13px 12px 16px;
+  margin-bottom: 8px; box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--low);
+}
+.card[data-pri="HOT"]::before { width: 6px; background: var(--hot); }
+.card[data-pri="HIGH"]::before { width: 5px; background: var(--high); }
+.card[data-pri="MEDIUM"]::before { background: var(--medium); }
+.card[data-done="1"] { opacity: .55; }
+
+.crow { display: flex; align-items: flex-start; gap: 10px; }
+.cmain { flex: 1; min-width: 0; }
+.cname { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.cmeta { font-size: 11.5px; color: var(--text-3); margin-top: 3px; display: flex; flex-wrap: wrap; gap: 3px 9px; align-items: baseline; }
+.cmeta .tel { font-family: var(--mono); font-size: 12px; color: var(--text-2); letter-spacing: -.01em; }
+.cscore { text-align: right; flex-shrink: 0; }
+.cscore .n { font-family: var(--mono); font-size: 24px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.cscore .l { font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-top: 3px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.chip {
+  font-size: 11px; padding: 2.5px 7px; border-radius: 5px;
+  background: var(--surface-2); color: var(--text-2); border: 1px solid var(--line-soft);
+}
+.chip.warn { background: var(--warn-bg); color: var(--warn-fg); border-color: transparent; }
+.chip.st { font-weight: 500; }
+.chip.st[data-s="INTERESTED"], .chip.st[data-s="WON"] { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.chip.st[data-s="OFFER_SENT"], .chip.st[data-s="NEGOTIATION"] { background: var(--accent-soft); color: var(--accent); }
+.chip.st[data-s="NO_ANSWER"], .chip.st[data-s="CALLBACK"] { background: var(--warn-bg); color: var(--warn-fg); }
+.chip.st[data-s="LOST"], .chip.st[data-s="NOT_INTERESTED"], .chip.st[data-s="DO_NOT_CONTACT"] { background: color-mix(in srgb, var(--hot) 12%, transparent); color: var(--hot); }
+
+/* ---- Aksiyonlar. Ara butonu bassparmak erimindeki en buyuk hedef. ---- */
+.acts { display: flex; gap: 6px; margin-top: 11px; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface-2); color: var(--text);
+  border-radius: 9px; padding: 9px 12px; font-size: 13.5px; font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; min-height: 42px;
+}
+.btn.call { flex: 1.2; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn.done { flex: 1; border-color: color-mix(in srgb, var(--good) 45%, var(--line)); color: var(--good); }
+.btn.ghost { flex: 0 0 auto; padding: 9px 11px; color: var(--text-2); }
+.btn[disabled] { opacity: .4; cursor: not-allowed; }
+
+/* ---- Detay ---- */
+.detail { margin-top: 11px; padding-top: 11px; border-top: 1px solid var(--line-soft); font-size: 13px; }
+.detail[hidden] { display: none; }
+.dgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 11px; }
+.dcell { background: var(--surface-2); border-radius: 8px; padding: 7px 9px; }
+.dcell .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.dcell .v { font-family: var(--mono); font-size: 15px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.dcell .v.na { font-family: var(--sans); font-size: 11.5px; font-weight: 400; color: var(--warn-fg); }
+.dsec { margin-bottom: 11px; }
+.dsec h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin: 0 0 5px; font-weight: 600; }
+.dsec p { margin: 0; color: var(--text-2); line-height: 1.55; }
+.gaps { margin: 0; padding-left: 17px; color: var(--text-2); }
+.gaps li { margin-bottom: 2px; }
+.links { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; }
+.hist { list-style: none; margin: 0; padding: 0; }
+.hist li { border-left: 2px solid var(--line); padding: 0 0 9px 10px; margin-left: 2px; }
+.hist li:last-child { padding-bottom: 0; }
+.hist .h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.hist .r { font-weight: 600; font-size: 12.5px; }
+.hist .t { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); }
+.hist .n { font-size: 12.5px; color: var(--text-2); white-space: pre-line; margin-top: 2px; }
+
+/* ---- Filtreler ---- */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.filters select, .filters input {
+  font: inherit; font-size: 12.5px; padding: 7px 9px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: var(--text); min-height: 38px;
+}
+.filters input { flex: 1; min-width: 130px; }
+
+/* ---- Huni ---- */
+.funnel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 14px; }
+.frow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line-soft); }
+.frow:last-child { border-bottom: 0; }
+.frow .fl { font-size: 13.5px; }
+.frow .fd { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.frow .fv { font-family: var(--mono); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.frow .fv.none { font-family: var(--sans); font-size: 13px; color: var(--text-3); font-weight: 400; }
+
+/* ---- Alt panel ---- */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+.sheet-bg[hidden] { display: none; }
+.sheet {
+  background: var(--surface); border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 16px 16px 0 0; padding: 16px 16px 24px;
+  width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+}
+@media (min-width: 600px) { .sheet-bg { align-items: center; } .sheet { border-radius: 16px; border-bottom: 1px solid var(--line); } }
+.sheet h3 { font-size: 15px; margin-bottom: 2px; }
+.sheet .sub { font-size: 12.5px; color: var(--text-3); margin-bottom: 14px; }
+.lab { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 600; display: block; margin-bottom: 6px; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+.opt { padding: 11px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); text-align: left; font-size: 13px; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sheet textarea, .sheet input[type="date"], .sheet select {
+  font: inherit; width: 100%; padding: 10px; border: 1px solid var(--line);
+  border-radius: 9px; background: var(--ink); color: var(--text); margin-bottom: 14px;
+}
+.sheet textarea { min-height: 84px; resize: vertical; }
+.srow { display: flex; gap: 8px; }
+.srow .btn { flex: 1; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+.empty { text-align: center; padding: 34px 16px; color: var(--text-3); font-size: 13.5px; border: 1px dashed var(--line); border-radius: 12px; }
+.foot { margin: 26px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-3); line-height: 1.65; }
+.foot b { color: var(--text-2); font-weight: 600; }
+
+/* Kaydetme gostergesi: sessizce durur, is bitince kaybolur. */
+.saving {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  padding: 7px 15px; font-size: 12px; color: var(--text-2); box-shadow: var(--shadow); z-index: 50;
+}
+.saving[hidden] { display: none; }
+.saving.err { border-color: var(--hot); color: var(--hot); }
+[hidden] { display: none !important; }
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="hbar">
+      <div class="brand">Viva <span>Saha</span></div>
+      <div class="stamp" id="stamp"></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-view="today" aria-selected="true">Bugün <b id="t-today"></b></button>
+      <button class="tab" role="tab" data-view="all" aria-selected="false">Lead'ler <b id="t-all"></b></button>
+      <button class="tab" role="tab" data-view="funnel" aria-selected="false">Huni</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="v-today"></section>
+  <section id="v-all" hidden></section>
+  <section id="v-funnel" hidden></section>
+
+  <p class="foot">
+    <b>Bu uygulama kimseye kendiliğinden ulaşmaz.</b> Otomatik e-posta, SMS, WhatsApp ya da
+    arama yoktur. &ldquo;Ara&rdquo; yalnızca telefon uygulamanızı açar ve sayacı artırmaz —
+    sayaç siz &ldquo;Arandı&rdquo; kaydını girdiğinizde artar.<br>
+    Ölçülemeyen veriler tahmin edilmez: bot koruması arkasındaki siteler skor almaz,
+    <b>ölçülemedi</b> olarak işaretlenir.
+  </p>
+</main>
+
+<div class="sheet-bg" id="sheet-bg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <h3 id="sh-title">Arama sonucu</h3>
+    <div class="sub" id="sh-sub"></div>
+
+    <span class="lab">Görüşme sonucu</span>
+    <div class="opts" id="sh-opts"></div>
+
+    <label class="lab" for="sh-notes">Ne konuşuldu?</label>
+    <textarea id="sh-notes" placeholder="Web sitesi hakkında bilgi aldı.&#10;Fiyat istedi.&#10;Cuma günü tekrar aranacak."></textarea>
+
+    <label class="lab" for="sh-follow">Sonraki takip (isteğe bağlı)</label>
+    <input type="date" id="sh-follow">
+
+    <div class="srow">
+      <button class="btn primary" id="sh-save">Kaydet</button>
+      <button class="btn" id="sh-cancel">Vazgeç</button>
+    </div>
+  </div>
+</div>
+
+<div class="saving" id="saving" hidden></div>
+
+<script id="viva-source" type="text/plain">__SOURCE__</script>
+<script id="viva-leads" type="application/json">__LEADS__</script>
+<script id="viva-state" type="application/json">__STATE__</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var RAW = JSON.parse(document.getElementById('viva-leads').textContent);
+  var LEADS = RAW.leads;
+  var GENERATED = RAW.generatedAt;
+  var PUBLISHED = JSON.parse(document.getElementById('viva-state').textContent);
+
+  /* -------------------------------------------------------------------------
+     DURUM
+     Iki katman: yayinlanan surumde gomulu olan (herkesin gordugu) ve bu
+     cihazda bekleyen (henuz yayinlanmamis). Yukleme sirasinda daha yeni olan
+     kazanir — boylece cevrim disi girilen kayit, yayinlanmis eski durumun
+     altinda kaybolmaz.
+     ------------------------------------------------------------------------- */
+  var LS_KEY = 'viva-saha-v1';
+  var state = {};
+
+  function loadState() {
+    var local = {};
+    try { local = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (e) { local = {}; }
+    var merged = {};
+    Object.keys(PUBLISHED).forEach(function (k) { merged[k] = PUBLISHED[k]; });
+    Object.keys(local).forEach(function (k) {
+      var p = merged[k];
+      if (!p || (local[k].at || '') > (p.at || '')) merged[k] = local[k];
+    });
+    state = merged;
+  }
+
+  var DEFAULT_ENTRY = { status: 'READY_TO_CALL', calls: [], follow: null, at: '' };
+
+  /**
+   * OKUMA — durumu DEGISTIRMEZ.
+   *
+   * Onceki surumde okuma da kayit olusturuyordu; render sirasinda her lead
+   * icin bos bir kayit doguyor ve yayinlanan duruma 100 anlamsiz satir
+   * giriyordu. Kayit yalnizca kullanici bir sey yaptiginda olusmali.
+   */
+  function read(id) {
+    return state[id] || DEFAULT_ENTRY;
+  }
+
+  /** YAZMA — kayit yoksa burada olusur. */
+  function entry(id) {
+    if (!state[id]) state[id] = { status: 'READY_TO_CALL', calls: [], follow: null, at: '' };
+    return state[id];
+  }
+
+  function touch(id) {
+    entry(id).at = new Date().toISOString();
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { /* kota dolu */ }
+    schedulePublish();
+  }
+
+  /* -------------------------------------------------------------------------
+     YAYINLAMA
+     Her tiklamada yayinlamak hem yavas hem hiz sinirina takilir; degisiklikler
+     biriktirilip tek yayinda gonderilir. Yerel kayit aninda yapildigi icin
+     kullanici bekletilmez.
+     ------------------------------------------------------------------------- */
+  var publishTimer = null;
+  var publishing = false;
+  var savingEl = document.getElementById('saving');
+  var readOnly = false;
+
+  function flash(msg, isError) {
+    savingEl.textContent = msg;
+    savingEl.classList.toggle('err', !!isError);
+    savingEl.hidden = false;
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { savingEl.hidden = true; }, isError ? 6000 : 1800);
+  }
+
+  function schedulePublish() {
+    if (readOnly) return;
+    clearTimeout(publishTimer);
+    publishTimer = setTimeout(doPublish, 2500);
+  }
+
+  /**
+   * Yayinlanacak sayfa canli DOM'dan uretilmez — calisma zamani betikleri ve
+   * bu goruntuye ozel durum oraya sizardi. Bunun yerine sayfanin KENDI
+   * kaynagi icinde base64 olarak tasinir ve yalnizca durum yerine konur.
+   * Boylece her yayin, ilk yayinla birebir ayni sayfayi uretir.
+   */
+  function sourceTemplate() {
+    var raw = document.getElementById('viva-source').textContent.trim();
+    var bytes = Uint8Array.from(atob(raw), function (c) { return c.charCodeAt(0); });
+    return new TextDecoder().decode(bytes);
+  }
+
+  function encodeSource(text) {
+    var bytes = new TextEncoder().encode(text);
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  function doPublish() {
+    if (readOnly || publishing) return;
+    publishing = true;
+    flash('Kaydediliyor…');
+
+    (window.claude && window.claude.use ? window.claude.use('artifact') : Promise.resolve(null))
+      .then(function (api) {
+        if (!api) {
+          publishing = false;
+          readOnly = true;
+          savingEl.hidden = true;
+          return null;
+        }
+        var tpl = sourceTemplate();
+        var stateJson = JSON.stringify(state).replace(/<\//g, '<\\/');
+        // Fonksiyon biciminde degistirme: not metninde gecen $& / $' gibi
+        // diziler replace tarafindan ozel olarak yorumlanmasin.
+        var html = tpl
+          .replace('__SOURCE__', function () { return encodeSource(tpl); })
+          .replace('__STATE__', function () { return stateJson; });
+        return api.publish(html);
+      })
+      .then(function (res) {
+        publishing = false;
+        if (res) flash('Kaydedildi');
+      })
+      .catch(function (err) {
+        publishing = false;
+        var code = (err && err.code) || 'upstream_error';
+        if (code === 'not_writer' || code === 'not_granted' || code === 'not_declared' ||
+            code === 'capability_disabled' || code === 'capability_removed' ||
+            code === 'consent_required') {
+          // Bu goruntu yazamiyor. Kayitlar cihazda duruyor — kullanici bilmeli.
+          readOnly = true;
+          flash('Salt okunur görünüm — kayıtlar yalnızca bu cihazda tutuluyor', true);
+        } else if (code === 'conflict') {
+          // Baska bir goruntu once yayinladi; kabuk zaten yeni surume dondurur.
+          savingEl.hidden = true;
+        } else if (code === 'rate_limited') {
+          flash('Çok sık kaydediliyor — birazdan tekrar denenecek', true);
+          clearTimeout(publishTimer);
+          publishTimer = setTimeout(doPublish, 20000);
+        } else {
+          flash('Kaydedilemedi — cihazda tutuldu, sonra tekrar denenecek', true);
+          clearTimeout(publishTimer);
+          publishTimer = setTimeout(doPublish, 15000);
+        }
+      });
+  }
+
+  /* ---- Sabitler ---------------------------------------------------------- */
+  var STATUS_LABEL = {
+    NEW: 'Yeni', READY_TO_CALL: 'Aranacak', CALLED: 'Arandı', NO_ANSWER: 'Ulaşılamadı',
+    CALLBACK: 'Geri aranacak', INTERESTED: 'İlgilendi', NOT_INTERESTED: 'İlgilenmedi',
+    OFFER_SENT: 'Teklif gönderildi', NEGOTIATION: 'Pazarlık', WON: 'Kazanıldı',
+    LOST: 'Kaybedildi', DO_NOT_CONTACT: 'İletişim kurma'
+  };
+  var RESULTS = [
+    ['REACHED', 'Ulaşıldı', 'CALLED', 0],
+    ['NO_ANSWER', 'Ulaşılamadı', 'NO_ANSWER', 1],
+    ['INTERESTED', 'İlgilendi', 'INTERESTED', 3],
+    ['ASKED_OFFER', 'Teklif istedi', 'INTERESTED', 2],
+    ['CALLBACK', 'Geri aranacak', 'CALLBACK', 3],
+    ['NOT_INTERESTED', 'İlgilenmedi', 'NOT_INTERESTED', 0],
+    ['WRONG_NUMBER', 'Yanlış numara', 'DO_NOT_CONTACT', 0]
+  ];
+  var RESULT_LABEL = {};
+  RESULTS.forEach(function (r) { RESULT_LABEL[r[0]] = r[1]; });
+  var CLOSED = ['WON', 'LOST', 'NOT_INTERESTED', 'DO_NOT_CONTACT'];
+  var PRI_ORDER = { HOT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+  var WSTAT_LABEL = {
+    ok: 'denetlendi', no_website: 'site yok', unreachable: 'ulaşılamadı',
+    blocked: 'bot koruması', unrendered: 'JS ile render'
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function addDays(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+  function telHref(p) {
+    var d = String(p).replace(/[^\d+]/g, '');
+    if (d.charAt(0) === '+') return 'tel:' + d;
+    if (d.charAt(0) === '0') return 'tel:+90' + d.slice(1);
+    if (d.length === 10) return 'tel:+90' + d;
+    return 'tel:' + d;
+  }
+  function fmtDT(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+  function fold(s) {
+    return String(s || '').toLowerCase()
+      .replace(/ı/g, 'i').replace(/İ/g, 'i').replace(/ş/g, 's')
+      .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c');
+  }
+
+  /* ---- Turetilmis gorunumler --------------------------------------------- */
+  function statusOf(l) { return read(l.id).status; }
+  function callsOf(l) { return read(l.id).calls || []; }
+
+  function todayList() {
+    return LEADS.filter(function (l) {
+      if (!l.tel) return false;                                  // arayamayacagimiz lead listeye girmez
+      if (CLOSED.indexOf(statusOf(l)) >= 0) return false;        // kapanmis is
+      var f = read(l.id).follow;
+      return !f || f <= today();                                 // ileri tarihli takip bugun degil
+    }).sort(function (a, b) {
+      var pa = PRI_ORDER[a.pri] == null ? 4 : PRI_ORDER[a.pri];
+      var pb = PRI_ORDER[b.pri] == null ? 4 : PRI_ORDER[b.pri];
+      if (pa !== pb) return pa - pb;
+      if ((b.ps || 0) !== (a.ps || 0)) return (b.ps || 0) - (a.ps || 0);
+      return callsOf(a).length - callsOf(b).length;               // hic aranmamis one
+    });
+  }
+
+  function overdue() {
+    return LEADS.filter(function (l) {
+      var f = read(l.id).follow;
+      return f && f < today() && CLOSED.indexOf(statusOf(l)) < 0;
+    });
+  }
+
+  function stats() {
+    var s = { total: LEADS.length, called: 0, contacted: 0, interested: 0, won: 0, lost: 0, due: 0 };
+    LEADS.forEach(function (l) {
+      var e = read(l.id);
+      if ((e.calls || []).length) s.called++;
+      if ((e.calls || []).some(function (c) { return c.result !== 'NO_ANSWER' && c.result !== 'WRONG_NUMBER'; })) s.contacted++;
+      if (e.status === 'INTERESTED' || e.status === 'NEGOTIATION' || e.status === 'OFFER_SENT') s.interested++;
+      if (e.status === 'WON') s.won++;
+      if (e.status === 'LOST') s.lost++;
+      if (e.follow && e.follow <= today() && CLOSED.indexOf(e.status) < 0) s.due++;
+    });
+    return s;
+  }
+
+  /* ---- Kart --------------------------------------------------------------
+     Skor yerine "ölçülemedi" gösterimi bilinçli: 0 yazmak sitenin kötü
+     olduğu izlenimi verirdi, oysa ölçemedik.
+     ---------------------------------------------------------------------- */
+  function scoreCell(v, label) {
+    if (v == null) return '<div class="dcell"><div class="k">' + label + '</div><div class="v na">ölçülemedi</div></div>';
+    return '<div class="dcell"><div class="k">' + label + '</div><div class="v">' + v + '</div></div>';
+  }
+
+  function cardHTML(l) {
+    var e = read(l.id);
+    var st = e.status;
+    var calls = e.calls || [];
+    var closed = CLOSED.indexOf(st) >= 0;
+
+    var chips = [];
+    chips.push('<span class="chip st" data-s="' + st + '">' + STATUS_LABEL[st] + '</span>');
+    if (l.rating != null) chips.push('<span class="chip">★ ' + l.rating + ' · ' + (l.reviews || 0) + ' yorum</span>');
+    if (l.ol) chips.push('<span class="chip">' + esc(l.ol) + '</span>');
+    if (l.manual) chips.push('<span class="chip warn">site ölçülemedi</span>');
+    if (calls.length) chips.push('<span class="chip">' + calls.length + ' arama</span>');
+    if (e.follow) {
+      var late = e.follow < today();
+      chips.push('<span class="chip' + (late ? ' warn' : '') + '">takip ' + e.follow.slice(8, 10) + '.' + e.follow.slice(5, 7) + (late ? ' ⏰' : '') + '</span>');
+    }
+
+    var meta = [l.seg, l.dist].filter(Boolean).map(esc).join(' · ');
+    if (l.tel) meta += '<span class="tel">' + esc(l.tel) + '</span>';
+
+    var acts = '';
+    if (l.tel) {
+      acts += '<a class="btn call" href="' + telHref(l.tel) + '">📞 Ara</a>';
+    } else {
+      acts += '<span class="btn" style="flex:1.4;opacity:.5">telefon yok</span>';
+    }
+    acts += '<button class="btn done" data-act="call" data-id="' + l.id + '">Arandı</button>';
+    acts += '<button class="btn ghost" data-act="detail" data-id="' + l.id + '" aria-expanded="false">Detay</button>';
+
+    return '<article class="card" data-pri="' + (l.pri || 'LOW') + '" data-done="' + (closed ? 1 : 0) + '" data-id="' + l.id + '">' +
+      '<div class="crow">' +
+        '<div class="cmain"><div class="cname">' + esc(l.name) + '</div>' +
+        '<div class="cmeta">' + meta + '</div></div>' +
+        '<div class="cscore"><div class="n">' + (l.ps == null ? '—' : l.ps) + '</div><div class="l">' + (l.pri || '') + '</div></div>' +
+      '</div>' +
+      '<div class="chips">' + chips.join('') + '</div>' +
+      '<div class="acts">' + acts + '</div>' +
+      '<div class="detail" hidden data-detail="' + l.id + '"></div>' +
+    '</article>';
+  }
+
+  function detailHTML(l) {
+    var e = read(l.id);
+    var h = '';
+
+    h += '<div class="dgrid">' +
+      scoreCell(l.ws, 'Website') +
+      scoreCell(l.ss, 'Sosyal') +
+      scoreCell(l.gap, 'Dijital açık') +
+    '</div>';
+
+    var wl = WSTAT_LABEL[l.wstat] || l.wstat;
+    h += '<div class="dsec"><h4>Website durumu</h4><p>' + esc(wl);
+    if (l.wreason) h += ' — ' + esc(l.wreason);
+    h += '</p></div>';
+
+    if (l.rat) h += '<div class="dsec"><h4>Neden bu teklif</h4><p>' + esc(l.rat) + '</p></div>';
+    if (l.why) h += '<div class="dsec"><h4>En güçlü satın alma sinyali</h4><p>' + esc(l.why) + '</p></div>';
+
+    if (l.gaps && l.gaps.length) {
+      h += '<div class="dsec"><h4>Konuşulacak eksikler</h4><ol class="gaps">';
+      l.gaps.forEach(function (g) { h += '<li>' + esc(g) + '</li>'; });
+      h += '</ol></div>';
+    }
+    if (l.ok && l.ok.length) {
+      h += '<div class="dsec"><h4>Sitesinde zaten var</h4><p>' + l.ok.map(esc).join(' · ') + '</p></div>';
+    }
+
+    var links = [];
+    if (l.web) links.push('<a href="' + esc(l.web) + '" target="_blank" rel="noreferrer noopener">Website ↗</a>');
+    if (l.surl) links.push('<a href="' + esc(l.surl) + '" target="_blank" rel="noreferrer noopener">' + esc(l.splat || 'sosyal') + (l.shandle ? ' @' + esc(l.shandle) : '') + ' ↗</a>');
+    links.push('<a href="' + esc(l.maps) + '" target="_blank" rel="noreferrer noopener">Google Maps ↗</a>');
+    h += '<div class="dsec"><h4>Bağlantılar</h4><div class="links">' + links.join('') + '</div></div>';
+
+    var calls = (e.calls || []).slice().reverse();
+    if (calls.length) {
+      h += '<div class="dsec"><h4>Görüşme geçmişi</h4><ul class="hist">';
+      calls.forEach(function (c) {
+        h += '<li><div class="h"><span class="r">' + (RESULT_LABEL[c.result] || c.result) + '</span>' +
+             '<span class="t">' + fmtDT(c.at) + '</span></div>';
+        if (c.notes) h += '<div class="n">' + esc(c.notes) + '</div>';
+        h += '</li>';
+      });
+      h += '</ul></div>';
+    }
+
+    h += '<div class="dsec"><h4>Durumu değiştir</h4><select data-act="status" data-id="' + l.id + '" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--ink);color:var(--text);font:inherit;font-size:13px">';
+    Object.keys(STATUS_LABEL).forEach(function (k) {
+      h += '<option value="' + k + '"' + (k === e.status ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>';
+    });
+    h += '</select></div>';
+
+    return h;
+  }
+
+  /* ---- Gorunumler --------------------------------------------------------- */
+  function renderToday() {
+    var s = stats();
+    var list = todayList();
+    var late = overdue();
+
+    var h = '<div class="kpis">' +
+      '<div class="kpi"><div class="k">Aranacak</div><div class="v">' + list.length + '</div></div>' +
+      '<div class="kpi"><div class="k">Arandı</div><div class="v">' + s.called + '</div></div>' +
+      '<div class="kpi"><div class="k">İlgilenen</div><div class="v">' + s.interested + '</div></div>' +
+      '<div class="kpi"><div class="k">Takip</div><div class="v">' + s.due + '</div></div>' +
+    '</div>';
+
+    if (late.length) {
+      h += '<div class="sect"><h2>⏰ Gecikmiş takipler</h2><span class="note">' + late.length + ' lead</span></div>';
+      h += late.map(cardHTML).join('');
+    }
+
+    h += '<div class="sect"><h2>Bugünün arama listesi</h2><span class="note">HOT → HIGH → skor → hiç aranmamış</span></div>';
+    h += list.length
+      ? list.slice(0, 40).map(cardHTML).join('')
+      : '<div class="empty">Aranacak lead kalmadı. Telefonu olan ve kapanmamış lead yok.</div>';
+
+    document.getElementById('v-today').innerHTML = h;
+  }
+
+  var filters = { pri: '', st: '', called: '', q: '' };
+
+  function renderAll() {
+    var rows = LEADS.filter(function (l) {
+      var e = read(l.id);
+      if (filters.pri && l.pri !== filters.pri) return false;
+      if (filters.st && e.status !== filters.st) return false;
+      if (filters.called === 'no' && (e.calls || []).length) return false;
+      if (filters.called === 'yes' && !(e.calls || []).length) return false;
+      if (filters.q) {
+        var hay = fold([l.name, l.dist, l.tel, l.seg].filter(Boolean).join(' '));
+        if (hay.indexOf(fold(filters.q)) < 0) return false;
+      }
+      return true;
+    });
+
+    var h = '<div class="filters">' +
+      '<input type="search" id="f-q" placeholder="İşletme, ilçe, telefon…" value="' + esc(filters.q) + '">' +
+      '<select id="f-pri"><option value="">Tüm öncelikler</option>' +
+        ['HOT', 'HIGH', 'MEDIUM', 'LOW'].map(function (p) {
+          return '<option value="' + p + '"' + (filters.pri === p ? ' selected' : '') + '>' + p + '</option>';
+        }).join('') + '</select>' +
+      '<select id="f-st"><option value="">Tüm durumlar</option>' +
+        Object.keys(STATUS_LABEL).map(function (k) {
+          return '<option value="' + k + '"' + (filters.st === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>';
+        }).join('') + '</select>' +
+      '<select id="f-called"><option value="">Arandı / aranmadı</option>' +
+        '<option value="no"' + (filters.called === 'no' ? ' selected' : '') + '>Hiç aranmadı</option>' +
+        '<option value="yes"' + (filters.called === 'yes' ? ' selected' : '') + '>Arandı</option></select>' +
+    '</div>';
+
+    h += '<div class="sect"><h2>' + rows.length + ' lead</h2><span class="note">' + LEADS.length + ' içinden</span></div>';
+    h += rows.length ? rows.slice(0, 60).map(cardHTML).join('') : '<div class="empty">Bu filtrelerle eşleşen lead yok.</div>';
+    if (rows.length > 60) h += '<div class="empty">İlk 60 gösteriliyor — filtreyi daraltın.</div>';
+
+    document.getElementById('v-all').innerHTML = h;
+
+    document.getElementById('f-q').addEventListener('input', function (ev) { filters.q = ev.target.value; renderAll(); });
+    ['pri', 'st', 'called'].forEach(function (k) {
+      document.getElementById('f-' + k).addEventListener('change', function (ev) { filters[k] = ev.target.value; renderAll(); });
+    });
+  }
+
+  function rate(n, d) { return d === 0 ? null : Math.round((n / d) * 100); }
+
+  function renderFunnel() {
+    var s = stats();
+    var interestedEver = LEADS.filter(function (l) {
+      return (read(l.id).calls || []).some(function (c) {
+        return c.result === 'INTERESTED' || c.result === 'ASKED_OFFER';
+      });
+    }).length;
+
+    var rows = [
+      ['Toplam lead', s.total, null, ''],
+      ['Arandı', s.called, rate(s.called, s.total), s.called + ' / ' + s.total],
+      ['Ulaşıldı', s.contacted, rate(s.contacted, s.called), 'arananların içinden'],
+      ['İlgilendi', interestedEver, rate(interestedEver, s.contacted), 'ulaşılanların içinden'],
+      ['Kazanıldı', s.won, rate(s.won, s.total), 'lead → satış']
+    ];
+
+    var h = '<div class="sect"><h2>Satış hunisi</h2><span class="note">payda sıfırsa oran yazılmaz</span></div><div class="funnel">';
+    rows.forEach(function (r) {
+      h += '<div class="frow"><div><div class="fl">' + r[0] + '</div>' +
+           (r[3] ? '<div class="fd">' + r[3] + '</div>' : '') + '</div>' +
+           '<div class="fv' + (r[2] == null ? '' : '') + '">' + r[1] +
+           (r[2] == null ? '' : ' <span style="font-size:12px;color:var(--text-3)">%' + r[2] + '</span>') +
+           '</div></div>';
+    });
+    h += '</div>';
+
+    var pri = { HOT: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+    LEADS.forEach(function (l) { if (pri[l.pri] != null) pri[l.pri]++; });
+    h += '<div class="sect"><h2>Öncelik dağılımı</h2></div><div class="kpis">' +
+      '<div class="kpi"><div class="k">🔥 HOT</div><div class="v">' + pri.HOT + '</div></div>' +
+      '<div class="kpi"><div class="k">🟢 HIGH</div><div class="v">' + pri.HIGH + '</div></div>' +
+      '<div class="kpi"><div class="k">🟡 MEDIUM</div><div class="v">' + pri.MEDIUM + '</div></div>' +
+      '<div class="kpi"><div class="k">🔴 LOW</div><div class="v">' + pri.LOW + '</div></div>' +
+    '</div>';
+
+    var unmeasured = LEADS.filter(function (l) { return l.manual; }).length;
+    h += '<div class="sect"><h2>Ölçüm kapsamı</h2></div><div class="funnel">' +
+      '<div class="frow"><div><div class="fl">Website denetlendi</div><div class="fd">skor üretildi</div></div>' +
+        '<div class="fv">' + LEADS.filter(function (l) { return l.wstat === 'ok'; }).length + '</div></div>' +
+      '<div class="frow"><div><div class="fl">Sitesi yok</div><div class="fd">gerçek bulgu, satış fırsatı</div></div>' +
+        '<div class="fv">' + LEADS.filter(function (l) { return l.wstat === 'no_website'; }).length + '</div></div>' +
+      '<div class="frow"><div><div class="fl">Ölçülemedi</div><div class="fd">bot koruması / hata / JS — elle bakılmalı</div></div>' +
+        '<div class="fv">' + unmeasured + '</div></div>' +
+      '<div class="frow"><div><div class="fl">Sosyal profil bulundu</div><div class="fd">doğrulanmış</div></div>' +
+        '<div class="fv">' + LEADS.filter(function (l) { return l.surl; }).length + '</div></div>' +
+    '</div>';
+
+    document.getElementById('v-funnel').innerHTML = h;
+  }
+
+  function renderAllViews() {
+    var s = stats();
+    document.getElementById('t-today').textContent = todayList().length;
+    document.getElementById('t-all').textContent = LEADS.length;
+    document.getElementById('stamp').innerHTML =
+      '<b>' + s.called + '</b> arandı · <b>' + s.contacted + '</b> ulaşıldı<br>' +
+      '<b>' + s.interested + '</b> ilgilendi · <b>' + s.won + '</b> kazanıldı';
+    renderToday();
+    if (!document.getElementById('v-all').hidden) renderAll();
+    if (!document.getElementById('v-funnel').hidden) renderFunnel();
+  }
+
+  /* ---- Arama sonucu paneli ------------------------------------------------
+     Iki adimli akis bilincli: "Ara" telefon uygulamasini acar ve sayaci
+     ARTIRMAZ; sayac ancak burada, kullanicinin onayiyla artar. Tiklamayi
+     arama saymak istatistikleri sisirirdi.
+     ---------------------------------------------------------------------- */
+  var sheetBg = document.getElementById('sheet-bg');
+  var sheetLead = null;
+  var sheetResult = '';
+
+  var SUGGEST = { NO_ANSWER: 1, CALLBACK: 3, INTERESTED: 3, ASKED_OFFER: 2 };
+
+  document.getElementById('sh-opts').innerHTML = RESULTS.map(function (r) {
+    return '<button class="opt" type="button" data-r="' + r[0] + '" aria-pressed="false">' + r[1] + '</button>';
+  }).join('');
+
+  function openSheet(id) {
+    var l = LEADS.filter(function (x) { return x.id === id; })[0];
+    if (!l) return;
+    sheetLead = l;
+    sheetResult = '';
+    document.getElementById('sh-sub').textContent = l.name + (l.tel ? ' · ' + l.tel : '');
+    document.getElementById('sh-notes').value = '';
+    document.getElementById('sh-follow').value = '';
+    Array.prototype.forEach.call(document.querySelectorAll('#sh-opts .opt'), function (b) {
+      b.setAttribute('aria-pressed', 'false');
+    });
+    sheetBg.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet() {
+    sheetBg.hidden = true;
+    sheetLead = null;
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('sh-opts').addEventListener('click', function (ev) {
+    var b = ev.target.closest('.opt');
+    if (!b) return;
+    sheetResult = b.dataset.r;
+    Array.prototype.forEach.call(document.querySelectorAll('#sh-opts .opt'), function (x) {
+      x.setAttribute('aria-pressed', String(x === b));
+    });
+    var days = SUGGEST[sheetResult];
+    document.getElementById('sh-follow').value = days ? addDays(days) : '';
+  });
+
+  document.getElementById('sh-cancel').addEventListener('click', closeSheet);
+  sheetBg.addEventListener('click', function (ev) { if (ev.target === sheetBg) closeSheet(); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !sheetBg.hidden) closeSheet(); });
+
+  document.getElementById('sh-save').addEventListener('click', function () {
+    if (!sheetLead) return;
+    if (!sheetResult) { flash('Önce görüşme sonucunu seçin', true); return; }
+
+    var e = entry(sheetLead.id);
+    var notes = document.getElementById('sh-notes').value.trim();
+    var follow = document.getElementById('sh-follow').value || null;
+
+    e.calls = e.calls || [];
+    e.calls.push({ at: new Date().toISOString(), result: sheetResult, notes: notes || null });
+
+    var map = {};
+    RESULTS.forEach(function (r) { map[r[0]] = r[2]; });
+    e.status = map[sheetResult] || 'CALLED';
+    e.follow = follow;
+
+    touch(sheetLead.id);
+    closeSheet();
+    renderAllViews();
+    flash('Kaydedildi — ' + (RESULT_LABEL[sheetResult] || ''));
+  });
+
+  /* ---- Olaylar ------------------------------------------------------------ */
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-act]');
+    if (!btn) return;
+    var act = btn.dataset.act;
+    var id = Number(btn.dataset.id);
+
+    if (act === 'call') { openSheet(id); return; }
+
+    if (act === 'detail') {
+      var card = btn.closest('.card');
+      var box = card.querySelector('[data-detail]');
+      var open = box.hidden;
+      if (open) {
+        var l = LEADS.filter(function (x) { return x.id === id; })[0];
+        box.innerHTML = detailHTML(l);
+      }
+      box.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Kapat' : 'Detay';
+    }
+  });
+
+  document.addEventListener('change', function (ev) {
+    var sel = ev.target.closest('[data-act="status"]');
+    if (!sel) return;
+    var id = Number(sel.dataset.id);
+    entry(id).status = sel.value;
+    touch(id);
+    renderAllViews();
+    flash('Durum: ' + STATUS_LABEL[sel.value]);
+  });
+
+  /* ---- Sekmeler ----------------------------------------------------------- */
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (tab) {
+    tab.addEventListener('click', function () {
+      var view = tab.dataset.view;
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) {
+        t.setAttribute('aria-selected', String(t === tab));
+      });
+      ['today', 'all', 'funnel'].forEach(function (v) {
+        document.getElementById('v-' + v).hidden = v !== view;
+      });
+      if (view === 'all') renderAll();
+      if (view === 'funnel') renderFunnel();
+      window.scrollTo(0, 0);
+    });
+  });
+
+  /* ---- Baslat ------------------------------------------------------------- */
+  loadState();
+  renderAllViews();
+})();
+</script>
