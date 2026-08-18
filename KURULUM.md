@@ -53,6 +53,32 @@ npm start
 
 → Tarayıcıda **http://localhost:3000** açılır.
 
+### VS Code kullanıyorsanız
+
+Terminal komutu yazmanıza gerek yok. Proje klasörünü VS Code'da açın:
+**Dosya → Klasör Aç** ve indirdiğiniz klasörü seçin.
+
+Sonra **Ctrl+Shift+P** (Mac'te ⌘+Shift+P) → `Tasks: Run Task` yazın.
+Hazır görevler listelenir:
+
+| Görev | Ne yapar |
+|---|---|
+| 1. Kurulum (bir kez) | Her şeyi kurar |
+| 2. Uygulamayı aç | localhost:3000 — terminalde linke Ctrl+tıklayın |
+| 3. Yeni işletme tara | Keşfet → denetle → puanla |
+| 4. Günlük rapor üret | Arama brifingleriyle `reports/latest.md` |
+| 5. Telefon sürümünü üret | Tek dosyalık HTML |
+| Denetim | Sistem kendi kurallarına uyuyor mu |
+
+Terminali tercih ederseniz **Ctrl+`** ile açıp yukarıdaki `npm` komutlarını
+aynen yazabilirsiniz — ikisi de aynı şeyi yapar.
+
+**Not:** VS Code Node.js'i içermez. Yukarıdaki 1. adımı (nodejs.org) yine de
+yapmanız gerekiyor.
+
+**Projeyi VS Code ile indirmek:** Ctrl+Shift+P → `Git: Clone` → depo
+adresini yapıştırın. Terminal kullanmadan da indirebilirsiniz.
+
 ### Günlük kullanım
 
 | Komut | Ne yapar |

@@ -1,0 +1,62 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Kurulum (bir kez)",
+      "detail": "Bağımlılıklar, .env, veritabanı ve testler — hepsi tek seferde",
+      "type": "shell",
+      "command": "npm run kur",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "2. Uygulamayı aç",
+      "detail": "http://localhost:3000 — durdurmak için terminalde Ctrl+C",
+      "type": "shell",
+      "command": "npm start",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "3. Yeni işletme tara",
+      "detail": "Keşfet → denetle → puanla. Birkaç dakika sürer.",
+      "type": "shell",
+      "command": "npm run tara",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "4. Günlük rapor üret",
+      "detail": "Arama brifingleriyle birlikte reports/latest.md",
+      "type": "shell",
+      "command": "npm run report",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "5. Telefon sürümünü üret",
+      "detail": "scratchpad/viva-saha.html — tarayıcıda açılabilir tek dosya",
+      "type": "shell",
+      "command": "npm run app",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Denetim: sistem kendi kurallarına uyuyor mu",
+      "detail": "Ölçülemeyen veri düşük skor almasın, eksik veri tahmin edilmesin",
+      "type": "shell",
+      "command": "npm run verify",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Testleri çalıştır",
+      "type": "shell",
+      "command": "npm test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    }
+  ]
+}
