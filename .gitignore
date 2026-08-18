@@ -22,3 +22,6 @@ npm-debug.log*
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Radar ciktisi uretilen dosyadir; kabuk (radar-shell.html) surumlenir.
+scratchpad/viva-lead-radar.html

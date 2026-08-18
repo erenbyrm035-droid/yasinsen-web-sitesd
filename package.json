@@ -15,7 +15,8 @@
     "score": "tsx scripts/score.ts",
     "pipeline": "tsx scripts/pipeline.ts",
     "report": "tsx scripts/report.ts",
-    "test": "tsx --test tests/*.test.ts"
+    "test": "tsx --test tests/*.test.ts",
+    "radar": "tsx scripts/radar.ts scratchpad/radar-shell.html scratchpad/viva-lead-radar.html"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",

@@ -1,0 +1,641 @@
+<title>VIVA Lead Radarı</title>
+<style>
+  /* ---- Token sistemi: acik tema tabanda, koyu tema token uzerinden ---- */
+  :root {
+    --accent: #0d7d84;
+    --accent-soft: #0d7d8420;
+    --accent-ink: #095b60;
+
+    --hot: #d43b40;
+    --high: #d97a06;
+    --medium: #6b7a91;
+    --low: #98a2b3;
+
+    --ground: #eef1f2;
+    --surface: #ffffff;
+    --surface-2: #f6f8f8;
+    --line: #d6dede;
+    --line-soft: #e6ecec;
+
+    --text: #131a1c;
+    --text-2: #4a585c;
+    --text-3: #78888d;
+
+    --pass: #2f7d4f;
+    --fail: #c0392f;
+
+    --shadow: 0 1px 2px rgb(16 26 28 / 0.06), 0 8px 24px -12px rgb(16 26 28 / 0.18);
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --accent: #2ba7ad;
+      --accent-soft: #2ba7ad1f;
+      --accent-ink: #7fd4d8;
+
+      --hot: #ef5f63;
+      --high: #f0a03a;
+      --medium: #8b9ab0;
+      --low: #5d6a7c;
+
+      --ground: #0e1416;
+      --surface: #151d20;
+      --surface-2: #1a2427;
+      --line: #263236;
+      --line-soft: #1f2a2e;
+
+      --text: #e7edee;
+      --text-2: #a6b4b8;
+      --text-3: #7b8b90;
+
+      --pass: #55b97f;
+      --fail: #ef6b60;
+
+      --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --accent: #2ba7ad;
+    --accent-soft: #2ba7ad1f;
+    --accent-ink: #7fd4d8;
+    --hot: #ef5f63;
+    --high: #f0a03a;
+    --medium: #8b9ab0;
+    --low: #5d6a7c;
+    --ground: #0e1416;
+    --surface: #151d20;
+    --surface-2: #1a2427;
+    --line: #263236;
+    --line-soft: #1f2a2e;
+    --text: #e7edee;
+    --text-2: #a6b4b8;
+    --text-3: #7b8b90;
+    --pass: #55b97f;
+    --fail: #ef6b60;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ---- Basliklar ---- */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  h1 {
+    margin: 6px 0 0;
+    font-size: clamp(30px, 4.5vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .lede { margin: 12px 0 0; max-width: 62ch; color: var(--text-2); }
+
+  h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  header { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 28px; }
+
+  /* ---- KPI ---- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .kpi .n {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .kpi .k { margin-top: 4px; font-size: 12px; color: var(--text-3); }
+
+  /* ---- Panel ---- */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .panel > .head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .panel > .body { padding: 20px; }
+
+  /* ---- Histogram ---- */
+  .hist { display: flex; align-items: flex-end; gap: 10px; height: 150px; }
+  .hbar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; height: 100%; }
+  .hbar .fill { border-radius: 4px 4px 2px 2px; min-height: 3px; background: var(--accent); opacity: 0.85; }
+  .hbar .cnt {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 12px; text-align: center; color: var(--text-2);
+  }
+  .hbar .lbl {
+    font-family: var(--mono); font-size: 10px; text-align: center;
+    color: var(--text-3); letter-spacing: 0.02em;
+  }
+  .hnote { margin: 16px 0 0; font-size: 13px; color: var(--text-2); max-width: 70ch; }
+
+  /* ---- Filtre ---- */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip {
+    font: inherit; font-size: 12.5px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text-2);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--text); }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .chip[aria-pressed="true"],
+  :root:not([data-theme="light"]) .chip[aria-pressed="true"] { color: #05191b; }
+  .chip:focus-visible, .row:focus-visible, .srch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .srch {
+    font: inherit; font-size: 13px;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--text);
+    padding: 7px 12px; border-radius: 8px; min-width: 200px;
+  }
+  .srch::placeholder { color: var(--text-3); }
+
+  /* ---- Tablo ---- */
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 960px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--surface-2);
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3);
+    text-align: left; padding: 10px 14px; white-space: nowrap;
+    border-bottom: 1px solid var(--line);
+  }
+  thead th.num { text-align: right; }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+  tbody td.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .row { cursor: pointer; }
+  .row:hover { background: var(--surface-2); }
+  .row[aria-expanded="true"] { background: var(--accent-soft); }
+
+  .rank { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+  .cname { font-weight: 600; letter-spacing: -0.01em; }
+  .cdom { font-family: var(--mono); font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 5px; white-space: nowrap;
+    color: #fff;
+  }
+  .p-HOT { background: var(--hot); }
+  .p-HIGH { background: var(--high); }
+  .p-MEDIUM { background: var(--medium); }
+  .p-LOW { background: var(--low); }
+
+  .offer { font-size: 13px; color: var(--text-2); }
+  .ocode {
+    font-family: var(--mono); font-size: 10px; color: var(--text-3);
+    border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; margin-right: 6px;
+  }
+
+  /* skor + mini bar */
+  .sc { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .sc .v { font-weight: 600; }
+  .track { width: 44px; height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .track > i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+  .nd { font-size: 11px; color: var(--text-3); font-family: var(--sans); }
+  /* Olculemeyen website: skor yerine uyari. "0" gostermek yanlis okumaya yol acardi. */
+  .warn { display: inline-flex; align-items: center; background: #3a2a15; color: #e0a458;
+          border-radius: 4px; padding: 2px 6px; font-size: 11px; white-space: nowrap;
+          font-family: var(--sans); }
+  .mrev { display: inline-block; background: #3a2a15; color: #e0a458; border-radius: 4px;
+          padding: 1px 5px; font-size: 10px; font-weight: 600; margin-left: 6px;
+          font-family: var(--sans); }
+  .tel {
+    font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums;
+    color: var(--accent); text-decoration: none; white-space: nowrap;
+    border-bottom: 1px solid transparent;
+  }
+  .tel:hover { border-bottom-color: var(--accent); }
+  .rev { font-weight: 600; }
+  .rate { display: block; font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+
+  /* ---- Detay ---- */
+  .detail > td { padding: 0; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .dgrid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; padding: 22px 20px; }
+  @media (max-width: 900px) { .dgrid { grid-template-columns: 1fr; } }
+
+  .dsec + .dsec { margin-top: 22px; }
+  .dsec h3 {
+    margin: 0 0 10px; font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.11em; text-transform: uppercase; color: var(--text-3);
+  }
+
+  .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .checks li { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: start; font-size: 13px; }
+  .mark { font-family: var(--mono); font-weight: 700; line-height: 1.4; }
+  .mark.ok { color: var(--pass); }
+  .mark.no { color: var(--fail); }
+  .mark.un { color: var(--text-3); }
+  .clabel { color: var(--text); }
+  .cev { display: block; color: var(--text-3); font-size: 12px; margin-top: 1px; }
+  .cw { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); white-space: nowrap; }
+
+  .kv { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; padding: 5px 0; border-bottom: 1px solid var(--line-soft); }
+  .kv:last-child { border-bottom: 0; }
+  .kv dt { color: var(--text-3); }
+  .kv dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+
+  .bar { margin-bottom: 10px; }
+  .bar .t { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .bar .t b { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar .tr { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .bar .tr > i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+
+  .offerbox { border: 1px solid var(--accent); border-radius: 10px; padding: 14px 16px; background: var(--accent-soft); }
+  .offerbox .lbl { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; }
+  .offerbox p { margin: 8px 0 0; font-size: 13px; color: var(--text-2); }
+
+  .gaps { list-style: none; margin: 0; padding: 0; counter-reset: g; }
+  .gaps li { counter-increment: g; display: grid; grid-template-columns: 20px 1fr; font-size: 13px; padding: 3px 0; }
+  .gaps li::before { content: counter(g) "."; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px;
+    border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px;
+    color: var(--text-3); margin: 0 4px 4px 0;
+  }
+
+  .empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
+
+  a { color: var(--accent); }
+  footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--text-3); }
+  footer p { margin: 0 0 8px; max-width: 78ch; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">VIVA Sales Engine · İstanbul · <span id="date"></span></div>
+    <h1>Lead Radarı</h1>
+    <p class="lede">
+      İstanbul'daki fitness, pilates ve dövüş sporları işletmeleri Google Places'ten keşfedildi,
+      siteleri canlı olarak denetlendi ve satın alma potansiyeline göre puanlandı.
+      Telefon numarasına dokunarak doğrudan arayabilir, satıra tıklayarak skorun dayandığı her bulguyu kanıtıyla görebilirsiniz.
+    </p>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="panel">
+    <div class="head">
+      <h2>Purchase score dağılımı</h2>
+      <span class="eyebrow" id="calibnote"></span>
+    </div>
+    <div class="body">
+      <div class="hist" id="hist"></div>
+      <p class="hnote">
+        <b>Aranacak liste küçüldü çünkü artık dürüst.</b> Önceki çalıştırmada 32 lead HIGH'dı;
+        bunların 11'i aslında ölçülmemiş sitelere dayanıyordu — sunucu HTTP 403 dönünce sistem
+        Cloudflare'in &ldquo;erişim engellendi&rdquo; sayfasını gerçek ana sayfa sanıp denetliyordu.
+        MACFit'in sitesi böylece &ldquo;33/100, güven yüksek&rdquo; damgası yemişti.
+        Artık ölçülemeyen siteye <b>skor verilmiyor</b>: <span class="warn">ölçülemedi</span> yazıp
+        elle incelemeye düşüyor. Listedeki 12 lead'in tamamı gerçekten ölçülmüş bir şeye dayanıyor.
+      </p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="head">
+      <div class="filters" id="filters">
+        <button class="chip" data-f="all" aria-pressed="true">Tümü</button>
+        <button class="chip" data-f="HOT" aria-pressed="false">HOT</button>
+        <button class="chip" data-f="HIGH" aria-pressed="false">HIGH</button>
+        <button class="chip" data-f="MEDIUM" aria-pressed="false">MEDIUM</button>
+        <button class="chip" data-f="LOW" aria-pressed="false">LOW</button>
+        <button class="chip" data-f="site" aria-pressed="false">Sitesi olanlar</button>
+        <button class="chip" data-f="nosite" aria-pressed="false">Sitesi olmayanlar</button>
+      </div>
+      <input class="srch" id="srch" type="search" placeholder="İşletme ara…" aria-label="İşletme ara">
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:34px"></th>
+            <th>İşletme</th>
+            <th>Telefon</th>
+            <th>Segment</th>
+            <th>İlçe</th>
+            <th class="num">Yorum</th>
+            <th class="num">Website</th>
+            <th class="num">Sosyal</th>
+            <th class="num">Purchase</th>
+            <th>Önerilen hizmet</th>
+            <th>Öncelik</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>Bu filtreyle eşleşen lead yok.</div>
+  </section>
+
+  <footer>
+    <p>
+      <b>Bu sistem yalnızca araştırma yapar.</b> Hiçbir işletmeye mesaj gönderilmez, e-posta atılmaz,
+      hiçbir CRM kaydı oluşturulmaz. Akış: keşfet → denetle → puanla → öner.
+    </p>
+    <p>
+      Ölçülemeyen alanlar boş bırakılmaz, &ldquo;veri yok&rdquo; olarak işaretlenir. Karar verici bilgisi
+      Apollo Free plan kısıtı nedeniyle, sosyal medya metrikleri Instagram giriş duvarı nedeniyle
+      otomatik toplanamıyor; ikisi de sistemde açık kısıt olarak duruyor.
+      İşletme verisi: Google Places API. Performans: Google PageSpeed Insights.
+    </p>
+  </footer>
+</div>
+
+<script id="viva-data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById('viva-data').textContent);
+  const leads = DATA.leads;
+  const stats = DATA.stats;
+
+  document.getElementById('date').textContent = new Date().toLocaleDateString('tr-TR', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+
+  const SEGMENTS = {
+    gym: 'Fitness salonu', boutique_gym: 'Boutique gym', pilates_studio: 'Pilates',
+    crossfit_box: 'CrossFit', martial_arts: 'Dövüş sporları',
+    personal_training: 'Personal training', fitness_other: 'Diğer'
+  };
+
+  // ---- KPI ----
+  const kpis = [
+    { n: stats.total, k: 'Toplam lead' },
+    { n: DATA.cov ? DATA.cov.tel : stats.total, k: 'Telefonu bulunan' },
+    { n: stats.hot, k: 'HOT' },
+    { n: stats.high, k: 'HIGH — aranacak liste' },
+    { n: stats.avg, k: 'Ortalama purchase score' }
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map((x) =>
+    `<div class="kpi"><div class="n">${x.n}</div><div class="k">${esc(x.k)}</div></div>`
+  ).join('');
+
+  // ---- Histogram ----
+  const buckets = {};
+  leads.forEach((l) => {
+    if (l.purchase_score == null) return;
+    const b = Math.floor(l.purchase_score / 10) * 10;
+    buckets[b] = (buckets[b] || 0) + 1;
+  });
+  const keys = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+  const peak = Math.max(...keys.map((k) => buckets[k]));
+  document.getElementById('hist').innerHTML = keys.map((k) => {
+    const n = buckets[k];
+    const pct = Math.max((n / peak) * 100, 2);
+    return `<div class="hbar"><div class="cnt">${n}</div>` +
+           `<div class="fill" style="height:${pct}%"></div>` +
+           `<div class="lbl">${k}–${k + 9}</div></div>`;
+  }).join('');
+  document.getElementById('calibnote').textContent =
+    `n=${stats.total} · medyan ${median(leads.map((l) => l.purchase_score).filter((v) => v != null))}`;
+
+  function median(a) {
+    const s = [...a].sort((x, y) => x - y);
+    return s.length ? s[Math.floor(s.length / 2)] : '—';
+  }
+
+  // ---- Skor hucresi ----
+  function scoreCell(v) {
+    if (v == null) return '<span class="nd">veri yok</span>';
+    return `<span class="sc"><span class="v">${v}</span>` +
+           `<span class="track"><i style="width:${Math.max(v, 3)}%"></i></span></span>`;
+  }
+
+  function host(u) {
+    if (!u) return 'website yok';
+    try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; }
+  }
+
+  // ---- Detay ----
+  function detailHTML(l) {
+    const w = l.website;
+    let checks = '<p class="nd">Website denetimi yok.</p>';
+    if (w && w.checks && w.checks.length) {
+      checks = '<ul class="checks">' + w.checks.map((c) => {
+        const m = c.p === null ? '<span class="mark un" title="Ölçülemedi">?</span>'
+          : c.p ? '<span class="mark ok">✓</span>' : '<span class="mark no">✕</span>';
+        const partial = (c.r !== null && c.r > 0 && c.r < 1) ? ` <span class="cw">%${Math.round(c.r * 100)}</span>` : '';
+        return `<li>${m}<span><span class="clabel">${esc(c.l)}</span>${partial}` +
+               `<span class="cev">${esc(c.e)}</span></span><span class="cw">${c.w}</span></li>`;
+      }).join('') + '</ul>';
+    }
+
+    const socials = (l.socials && l.socials.length)
+      ? l.socials.map((s) =>
+          `<div class="kv"><dt>${esc(s.platform)}${s.handle ? ' · @' + esc(s.handle) : ''}</dt>` +
+          `<dd>${s.score == null ? '—' : s.score} <span class="tag">${esc(s.confidence)}</span></dd></div>`
+        ).join('')
+      : '<p class="nd">Doğrulanabilir sosyal profil bulunamadı — sitede link yoksa handle tahmin edilmez.</p>';
+
+    const b = l.breakdown || {};
+    const bars = [
+      ['Dijital boşluk', l.digital_gap],
+      ['İşletme potansiyeli', l.business_potential],
+      ['Satın alma sinyali', l.estimated_buying_intent],
+      ['Website skoru', l.website_score],
+      ['Sosyal skoru', l.social_score]
+    ].map(([t, v]) =>
+      `<div class="bar"><div class="t"><span>${t}</span><b>${v == null ? 'veri yok' : v}</b></div>` +
+      `<div class="tr"><i style="width:${v == null ? 0 : v}%"></i></div></div>`
+    ).join('');
+
+    const intent = (b.intent || []).slice().sort((x, y) => (y.v * y.w) - (x.v * x.w))[0];
+    const pot = (b.pot || []).filter((c) => c.w > 0).slice().sort((x, y) => (y.v * y.w) - (x.v * x.w))[0];
+
+    const sig = w && w.signals ? w.signals : null;
+    const meta = [];
+    if (sig) {
+      if (sig.lh != null) meta.push(['Lighthouse (mobil)', sig.lh + '/100']);
+      if (sig.ttfb != null) meta.push(['Yanıt süresi', sig.ttfb + ' ms']);
+      if (sig.bytes != null) meta.push(['HTML boyutu', Math.round(sig.bytes / 1024) + ' KB']);
+      if (sig.platform) meta.push(['Altyapı', sig.platform]);
+      if (sig.year) meta.push(['Telif yılı', sig.year]);
+    }
+    if (l.review_count != null) meta.push(['Google yorumu', l.review_count + (l.rating ? ` · ${l.rating}★` : '')]);
+    if (l.phone) meta.push(['Telefon', l.phone]);
+    if (w && w.http_status) meta.push(['HTTP', w.http_status]);
+
+    return `<div class="dgrid">
+      <div>
+        <div class="dsec">
+          <h3>Website denetimi${w ? ` — ${w.score}/100 · güven: ${esc(w.confidence)}` : ''}</h3>
+          ${w && w.notes ? `<p class="cev" style="margin-bottom:10px">${esc(w.notes)}</p>` : ''}
+          ${checks}
+        </div>
+      </div>
+      <div>
+        <div class="dsec">
+          <h3>Önerilen hizmet</h3>
+          <div class="offerbox">
+            <div class="lbl">${esc(l.offer_label || '—')}</div>
+            <p>${esc(l.rationale || '')}</p>
+          </div>
+        </div>
+        <div class="dsec">
+          <h3>Skor kırılımı</h3>
+          ${bars}
+          ${b.purchase ? `<p class="cev" style="font-family:var(--mono);font-size:11px;line-height:1.6">${esc(b.purchase.formula)}</p>` : ''}
+          ${pot ? `<p class="cev">Potansiyelin başlıca dayanağı: ${esc(pot.d)}</p>` : ''}
+          ${intent ? `<p class="cev">En güçlü satın alma sinyali: ${esc(intent.d)}</p>` : ''}
+        </div>
+        <div class="dsec">
+          <h3>Sosyal medya</h3>
+          ${socials}
+        </div>
+        ${meta.length ? `<div class="dsec"><h3>Ölçümler</h3>${meta.map(([k, v]) =>
+          `<div class="kv"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</div>` : ''}
+        ${(l.digital_gaps && l.digital_gaps.length) ? `<div class="dsec"><h3>Kapatılacak boşluklar</h3>
+          <ol class="gaps">${l.digital_gaps.map((g) => `<li>${esc(g)}</li>`).join('')}</ol></div>` : ''}
+        <div class="dsec">
+          <h3>Karar verici</h3>
+          <p class="nd">Veri yok — Apollo Free plan People Search'ü kapatıyor.</p>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ---- Tablo ----
+  const tbody = document.getElementById('tbody');
+  let filter = 'all';
+  let query = '';
+
+  function matches(l) {
+    if (filter === 'site' && !l.site_url) return false;
+    if (filter === 'nosite' && l.site_url) return false;
+    if (['HOT', 'HIGH', 'MEDIUM', 'LOW'].includes(filter) && l.priority !== filter) return false;
+    if (query && !(l.name || '').toLocaleLowerCase('tr').includes(query)) return false;
+    return true;
+  }
+
+  function render() {
+    const rows = leads.filter(matches);
+    document.getElementById('empty').hidden = rows.length > 0;
+
+    tbody.innerHTML = rows.map((l, i) => {
+      const seg = SEGMENTS[l.segment] || l.segment || '—';
+      return `<tr class="row" tabindex="0" role="button" aria-expanded="false" data-id="${l.lead_id}">
+        <td class="rank">${i + 1}</td>
+        <td><div class="cname">${esc(l.name)}</div><div class="cdom">${esc(host(l.site_url))}${l.manual_review
+          ? `<span class="mrev" title="${esc(l.website_reason || '')}">elle inceleme</span>` : ''}</div></td>
+        <td>${l.phone
+          ? `<a class="tel" href="tel:${esc(l.phone.replace(/\s/g, ''))}" onclick="event.stopPropagation()">${esc(l.phone)}</a>`
+          : '<span class="nd">veri yok</span>'}</td>
+        <td style="font-size:13px;color:var(--text-2)">${esc(seg)}</td>
+        <td style="font-size:13px;color:var(--text-2)">${esc(l.location_district || '—')}</td>
+        <td class="num">${l.review_count == null ? '<span class="nd">—</span>' : `<span class="rev">${l.review_count}</span>${l.rating ? `<span class="rate">${l.rating}★</span>` : ''}`}</td>
+        <td class="num">${l.website_score == null && l.website_status !== 'no_website'
+          ? `<span class="warn" title="${esc(l.website_reason || '')}">ölçülemedi</span>`
+          : scoreCell(l.website_score)}</td>
+        <td class="num">${scoreCell(l.social_score)}</td>
+        <td class="num">${scoreCell(l.purchase_score)}</td>
+        <td class="offer">${l.offer_code ? `<span class="ocode">${esc(l.offer_code)}</span>` : ''}${esc(l.offer_label || '—')}</td>
+        <td><span class="pill p-${esc(l.priority || 'LOW')}">${esc(l.priority || '—')}</span></td>
+      </tr>
+      <tr class="detail" hidden data-detail="${l.lead_id}"><td colspan="11"></td></tr>`;
+    }).join('');
+  }
+
+  function toggle(row) {
+    const id = row.dataset.id;
+    const det = tbody.querySelector(`[data-detail="${id}"]`);
+    const open = row.getAttribute('aria-expanded') === 'true';
+    if (open) {
+      row.setAttribute('aria-expanded', 'false');
+      det.hidden = true;
+      return;
+    }
+    const lead = leads.find((x) => String(x.lead_id) === String(id));
+    det.firstElementChild.innerHTML = detailHTML(lead);
+    det.hidden = false;
+    row.setAttribute('aria-expanded', 'true');
+  }
+
+  tbody.addEventListener('click', (e) => {
+    const row = e.target.closest('.row');
+    if (row) toggle(row);
+  });
+  tbody.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const row = e.target.closest('.row');
+    if (!row) return;
+    e.preventDefault();
+    toggle(row);
+  });
+
+  document.getElementById('filters').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    filter = chip.dataset.f;
+    document.querySelectorAll('#filters .chip').forEach((c) =>
+      c.setAttribute('aria-pressed', String(c === chip)));
+    render();
+  });
+
+  document.getElementById('srch').addEventListener('input', (e) => {
+    query = e.target.value.toLocaleLowerCase('tr').trim();
+    render();
+  });
+
+  render();
+})();
+</script>
