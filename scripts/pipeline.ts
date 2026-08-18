@@ -5,6 +5,7 @@ loadEnv();
 import { initSchema, closeDb } from '../src/lib/db/client';
 import { startRun, finishRun } from '../src/lib/db/repositories/runs';
 import { runDiscover } from './discover';
+import { countLeads } from '../src/lib/db/repositories/leads';
 import { runAudit } from './audit';
 import { runScore } from './score';
 import { parseArgs } from './args';
@@ -30,7 +31,44 @@ async function main(): Promise<void> {
   console.log(`Hedef: ${city} · ${limit} lead\n`);
 
   console.log('▸ 1/3 DISCOVER');
-  const discover = await runDiscover({ limit, city, sourceId: args.source });
+
+  /**
+   * Kesif basarisiz olabilir ve bu pipeline'i BITIRMEMELI.
+   *
+   * Gercek vaka: anahtari olmayan yeni bir kullanicida sistem OSM'e dusuyor,
+   * Overpass da o an 504 donuyordu — ve tum calistirma cokup hicbir sey
+   * uretmiyordu. Oysa veritabaninda zaten lead varsa onlari denetleyip
+   * puanlamak hala anlamli. Kesif, pipeline'in tamami degil bir adimidir.
+   */
+  let discover: Awaited<ReturnType<typeof runDiscover>> | null = null;
+  let discoverError: string | null = null;
+  try {
+    discover = await runDiscover({ limit, city, sourceId: args.source });
+  } catch (err) {
+    discoverError = err instanceof Error ? err.message : String(err);
+    console.warn(`\n[pipeline] Keşif adımı başarısız: ${discoverError}`);
+
+    const existing = countLeads();
+    if (existing === 0) {
+      // Elde hicbir sey yok: devam etmenin anlami yok, ama kullaniciya NE
+      // YAPMASI gerektigi soylenmeli.
+      console.error(
+        '\n[pipeline] Veritabanı boş ve yeni işletme keşfedilemedi.\n' +
+          '\n  Yapılabilecekler:\n' +
+          '   1. Google Places anahtarı ekleyin (.env → GOOGLE_MAPS_API_KEY).\n' +
+          '      En sağlam yol; telefon ve yorum verisi de gelir.\n' +
+          '   2. Ya da birkaç dakika sonra tekrar deneyin — ücretsiz OpenStreetMap\n' +
+          '      sunucusu (Overpass) yoğun olduğunda geçici olarak yanıt vermiyor.\n',
+      );
+      process.exitCode = 1;
+      return;
+    }
+
+    console.warn(
+      `[pipeline] Veritabanındaki ${existing} lead ile devam ediliyor ` +
+        '(yeni işletme eklenmedi).\n',
+    );
+  }
 
   console.log('\n▸ 2/3 ANALYZE');
   const audit = await runAudit({ limit, concurrency: args.concurrency });
@@ -43,6 +81,7 @@ async function main(): Promise<void> {
     city,
     limit,
     discover,
+    discoverError,
     audit,
     score,
     durationSeconds: Math.round((Date.now() - startedAt) / 1000),
@@ -50,8 +89,9 @@ async function main(): Promise<void> {
   finishRun(runId, stats);
 
   console.log(
-    `\n✓ Pipeline tamamlandı (${stats.durationSeconds}s). ` +
-      `Dashboard için: npm run dev → http://localhost:3000`,
+    `\n✓ Pipeline tamamlandı (${stats.durationSeconds}s)` +
+      (discoverError ? ' — keşif adımı atlandı' : '') +
+      `. Uygulama için: npm start → http://localhost:3000`,
   );
 }
 

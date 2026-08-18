@@ -182,6 +182,17 @@ header {
 .dsec h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin: 0 0 5px; font-weight: 600; }
 .dsec p { margin: 0; color: var(--text-2); line-height: 1.55; }
 .gaps { margin: 0; padding-left: 17px; color: var(--text-2); }
+/* Brifing: aramadan hemen once okunacak bolum, kart icinde ayri bir zemin. */
+.brief { background: var(--surface-2); border-radius: 10px; padding: 11px 12px; margin-bottom: 11px; }
+.brief .dsec:last-child { margin-bottom: 0; }
+.brief blockquote {
+  margin: 0; padding: 8px 11px; background: var(--surface); border-radius: 8px;
+  border-left: 3px solid var(--accent); color: var(--text); font-size: 13px; line-height: 1.55;
+}
+.dsec.caution { background: var(--warn-bg); border-radius: 8px; padding: 9px 11px; margin-top: 11px; }
+.dsec.caution h4 { color: var(--warn-fg); }
+.dsec.caution p { color: var(--warn-fg); font-size: 12.5px; margin-bottom: 6px; }
+.dsec.caution p:last-child { margin-bottom: 0; }
 .gaps li { margin-bottom: 2px; }
 .links { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; }
 .hist { list-style: none; margin: 0; padding: 0; }
@@ -609,13 +620,35 @@ header {
     if (l.wreason) h += ' — ' + esc(l.wreason);
     h += '</p></div>';
 
-    if (l.rat) h += '<div class="dsec"><h4>Neden bu teklif</h4><p>' + esc(l.rat) + '</p></div>';
-    if (l.why) h += '<div class="dsec"><h4>En güçlü satın alma sinyali</h4><p>' + esc(l.why) + '</p></div>';
+    // --- Arama brifingi: "ne yapacagim" ---
+    var br = l.brief;
+    if (br) {
+      h += '<div class="brief">';
+      h += '<div class="dsec"><h4>Durum</h4><p><b>' + esc(br.h) + '</b></p></div>';
+      h += '<div class="dsec"><h4>Nasıl başlanır</h4><blockquote>' + esc(br.o) + '</blockquote></div>';
 
-    if (l.gaps && l.gaps.length) {
-      h += '<div class="dsec"><h4>Konuşulacak eksikler</h4><ol class="gaps">';
-      l.gaps.forEach(function (g) { h += '<li>' + esc(g) + '</li>'; });
-      h += '</ol></div>';
+      if (br.f && br.f.length) {
+        h += '<div class="dsec"><h4>Konuşulacak somut bulgular</h4><ul class="gaps">';
+        br.f.forEach(function (f) {
+          h += '<li><b>' + esc(f.label) + '</b> — ' + esc(f.evidence) + '</li>';
+        });
+        h += '</ul></div>';
+      }
+
+      if (br.p) h += '<div class="dsec"><h4>Ne satılır</h4><p>' + esc(br.p) + '</p></div>';
+
+      if (br.q && br.q.length) {
+        h += '<div class="dsec"><h4>Sorulacaklar</h4><ul class="gaps">';
+        br.q.forEach(function (q) { h += '<li>' + esc(q) + '</li>'; });
+        h += '</ul></div>';
+      }
+
+      if (br.c && br.c.length) {
+        h += '<div class="dsec caution"><h4>⚠️ Dikkat</h4>';
+        br.c.forEach(function (c) { h += '<p>' + esc(c) + '</p>'; });
+        h += '</div>';
+      }
+      h += '</div>';
     }
     if (l.ok && l.ok.length) {
       h += '<div class="dsec"><h4>Sitesinde zaten var</h4><p>' + l.ok.map(esc).join(' · ') + '</p></div>';

@@ -52,3 +52,9 @@ export function listLeads(status?: LeadStatus): LeadRow[] {
     ? (db.prepare('SELECT * FROM leads WHERE status = ? ORDER BY id').all(status) as LeadRow[])
     : (db.prepare('SELECT * FROM leads ORDER BY id').all() as LeadRow[]);
 }
+
+/** Veritabanindaki toplam lead sayisi. */
+export function countLeads(): number {
+  const row = getDb().prepare('SELECT COUNT(*) AS n FROM leads').get() as { n: number };
+  return row.n;
+}

@@ -7,6 +7,10 @@ import { resolve, dirname } from 'node:path';
 import { initSchema, closeDb } from '../src/lib/db/client';
 import { listLeadTable, getDashboardStats } from '../src/lib/db/repositories/views';
 import type { LeadTableRow } from '../src/lib/db/repositories/views';
+import { buildBrief } from '../src/lib/brief';
+import { getDb } from '../src/lib/db/client';
+import { parseJson } from '../src/lib/db/client';
+import type { AuditCheck } from '../src/lib/types';
 
 /**
  * Gunluk rapor uretici.
@@ -112,6 +116,53 @@ function diff(current: Snapshot, previous: Snapshot | null) {
     moved: moved.slice(0, 10),
     disappeared: previous.leads.filter((l) => !current.leads.some((c) => c.id === l.id)).length,
   };
+}
+
+/** Lead icin brifing verisini toplar. Rapor, uygulama ve dashboard ayni
+ *  `buildBrief` fonksiyonunu kullanir — uc yerde farkli tavsiye cikamaz. */
+function briefFor(leadId: number) {
+  const row = getDb()
+    .prepare(
+      `SELECT c.name, c.segment, c.location_district, c.rating, c.review_count, c.website,
+              w.score AS website_score, w.status AS website_status, w.reason AS website_reason,
+              w.checks,
+              (SELECT sa.score FROM social_audits sa WHERE sa.company_id = c.id
+                 ORDER BY sa.score DESC NULLS LAST LIMIT 1) AS social_score,
+              (SELECT sa.profile_url FROM social_audits sa WHERE sa.company_id = c.id
+                 ORDER BY sa.score DESC NULLS LAST LIMIT 1) AS social_url,
+              o.offer_label, o.rationale,
+              COALESCE(l.call_count, 0) AS call_count,
+              (SELECT cl.notes FROM call_logs cl WHERE cl.lead_id = l.id
+                 ORDER BY cl.id DESC LIMIT 1) AS last_notes
+         FROM leads l
+         JOIN companies c ON c.id = l.company_id
+         LEFT JOIN website_audits w ON w.id =
+           (SELECT MAX(id) FROM website_audits WHERE company_id = c.id)
+         LEFT JOIN offer_recommendations o ON o.id =
+           (SELECT MAX(id) FROM offer_recommendations WHERE lead_id = l.id)
+        WHERE l.id = ?`,
+    )
+    .get(leadId) as Record<string, unknown> | undefined;
+  if (!row) return null;
+
+  return buildBrief({
+    name: String(row.name),
+    segment: (row.segment as string) ?? null,
+    district: (row.location_district as string) ?? null,
+    rating: (row.rating as number) ?? null,
+    reviewCount: (row.review_count as number) ?? null,
+    hasWebsite: Boolean(row.website),
+    websiteScore: (row.website_score as number) ?? null,
+    websiteStatus: String(row.website_status ?? 'ok'),
+    websiteReason: (row.website_reason as string) ?? null,
+    socialScore: (row.social_score as number) ?? null,
+    socialUrl: (row.social_url as string) ?? null,
+    offerLabel: (row.offer_label as string) ?? null,
+    offerRationale: (row.rationale as string) ?? null,
+    checks: parseJson<AuditCheck[]>(row.checks as string, []),
+    callCount: (row.call_count as number) ?? 0,
+    lastCallNotes: (row.last_notes as string) ?? null,
+  });
 }
 
 function scoreCell(v: number | null): string {
@@ -255,7 +306,64 @@ function buildMarkdown(current: Snapshot, previous: Snapshot | null): string {
     lines.push('');
   }
 
-  lines.push('---');
+  // --- Arama brifingleri ----------------------------------------------------
+  if (callList.length > 0) {
+    lines.push('## Arama brifingleri');
+    lines.push('');
+    lines.push('_Her cümle bir ölçüme dayanır. Ölçemediğimiz şey hakkında iddia yoktur._');
+    lines.push('');
+
+    for (const [i, lead] of callList.entries()) {
+      const brief = briefFor(lead.id);
+      if (!brief) continue;
+
+      lines.push(`### ${i + 1}. ${lead.company}`);
+      lines.push('');
+      lines.push(`**${brief.headline}**`);
+      lines.push('');
+      if (lead.phone) lines.push(`📞 ${lead.phone}${lead.location ? ` · ${lead.location}` : ''}`);
+      lines.push('');
+
+      lines.push('**Nasıl başlanır**');
+      lines.push('');
+      lines.push(`> ${brief.opening}`);
+      lines.push('');
+
+      if (brief.findings.length > 0) {
+        lines.push('**Konuşulacak somut bulgular**');
+        lines.push('');
+        for (const f of brief.findings) {
+          lines.push(`- **${f.label}** — ${f.evidence}`);
+        }
+        lines.push('');
+      }
+
+      if (brief.pitch) {
+        lines.push('**Ne satılır**');
+        lines.push('');
+        lines.push(brief.pitch);
+        lines.push('');
+      }
+
+      if (brief.questions.length > 0) {
+        lines.push('**Sorulacaklar**');
+        lines.push('');
+        for (const q of brief.questions) lines.push(`- ${q}`);
+        lines.push('');
+      }
+
+      if (brief.cautions.length > 0) {
+        lines.push('**⚠️ Dikkat**');
+        lines.push('');
+        for (const c of brief.cautions) lines.push(`- ${c}`);
+        lines.push('');
+      }
+
+      lines.push('---');
+      lines.push('');
+    }
+  }
+
   lines.push('');
   lines.push(
     '_Bu rapor otomatik üretildi. Sistem yalnızca araştırma yapar: hiçbir işletmeye ' +

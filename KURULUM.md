@@ -31,27 +31,37 @@ git checkout claude/viva-sales-engine-leads-8vvpzu
 
 ---
 
-## 3. Kurun ve çalıştırın
+## 3. Tek komutla kurun
+
+Proje klasöründe terminal açın ve şunu yazın:
 
 ```bash
-npm install
-npm run setup
+npm run kur
 ```
 
-`npm run setup` şunu yapar: veritabanını oluşturur → 25 İstanbul işletmesi bulur →
-sitelerini denetler → puanlar. Yaklaşık 1–2 dakika sürer.
+Bu komut her şeyi yapar ve ne yaptığını satır satır yazar:
+bağımlılıkları kurar, `.env` dosyasını oluşturur, veritabanını hazırlar,
+kendi testlerini çalıştırır ve elinizdeki veriyi özetler.
 
-Sonra panoyu açın:
+**Temiz bir kopyada 35 saniye sürüyor** (gerçekten ölçüldü, tahmin değil).
+
+Bittiğinde:
 
 ```bash
-npm run dev
+npm start
 ```
 
-Tarayıcıda **http://localhost:3000** adresine gidin.
+→ Tarayıcıda **http://localhost:3000** açılır.
 
-Durdurmak için terminalde `Ctrl + C`.
+### Günlük kullanım
 
----
+| Komut | Ne yapar |
+|---|---|
+| `npm start` | Uygulamayı açar |
+| `npm run tara` | Yeni işletme keşfeder, analiz eder, puanlar |
+| `npm run report` | Arama brifingli günlük rapor üretir (`reports/latest.md`) |
+| `npm run app` | Telefonda açılacak tek dosyalık sürümü üretir |
+| `npm run verify` | Sistemin kendi kurallarına uyduğunu denetler |
 
 ## 4. Daha fazla lead
 

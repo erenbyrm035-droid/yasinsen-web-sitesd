@@ -5,6 +5,8 @@ loadEnv();
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { initSchema, closeDb, getDb, parseJson } from '../src/lib/db/client';
+import { buildBrief } from '../src/lib/brief';
+import type { AuditCheck } from '../src/lib/types';
 
 /**
  * Telefonda kullanilacak surumun verisini uretir.
@@ -83,10 +85,26 @@ function main(): void {
   const rows = getDb().prepare(SQL).all() as Record<string, unknown>[];
 
   const leads = rows.map((r) => {
-    const checks = parseJson<{ label: string; passed: boolean | null; evidence: string; weight: number }[]>(
-      r.checks as string,
-      [],
-    );
+    const checks = parseJson<AuditCheck[]>(r.checks as string, []);
+
+    // Arama brifingi rapor, dashboard ve bu uygulama icin AYNI fonksiyondan
+    // uretilir — uc yerde farkli tavsiye cikamaz.
+    const brief = buildBrief({
+      name: r.name as string,
+      segment: (r.segment as string) ?? null,
+      district: (r.district as string) ?? null,
+      rating: (r.rating as number) ?? null,
+      reviewCount: (r.review_count as number) ?? null,
+      hasWebsite: Boolean(r.website),
+      websiteScore: (r.website_score as number) ?? null,
+      websiteStatus: String(r.website_status ?? 'ok'),
+      websiteReason: (r.website_reason as string) ?? null,
+      socialScore: (r.social_score as number) ?? null,
+      socialUrl: (r.social_url as string) ?? null,
+      offerLabel: (r.offer_label as string) ?? null,
+      offerRationale: (r.rationale as string) ?? null,
+      checks,
+    });
     const breakdown = parseJson<Record<string, unknown>>(r.breakdown as string, {});
     const intent = (breakdown.buyingIntentComponents as { value: number | null; weight: number; detail: string }[] ?? [])
       .filter((c) => c.value !== null)
@@ -119,8 +137,15 @@ function main(): void {
       oc: (r.offer_code as string) ?? null,
       ol: (r.offer_label as string) ?? null,
       rat: (r.rationale as string) ?? null,
-      // En agir 5 eksik — arama sirasinda konusulacak maddeler.
-      gaps: parseJson<string[]>(r.digital_gaps as string, []).slice(0, 5),
+      // Arama brifingi — "bu isletmeyi arayinca ne yapacagim".
+      brief: {
+        h: brief.headline,
+        o: brief.opening,
+        f: brief.findings,
+        p: brief.pitch,
+        q: brief.questions,
+        c: brief.cautions,
+      },
       // Gecen kontroller: "sitenizde su var" demek icin.
       ok: checks.filter((c) => c.passed === true).map((c) => c.label).slice(0, 6),
     };
