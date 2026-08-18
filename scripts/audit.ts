@@ -6,6 +6,7 @@ import { initSchema, closeDb } from '../src/lib/db/client';
 import { listCompanies } from '../src/lib/db/repositories/companies';
 import { insertWebsiteAudit, insertSocialAudit } from '../src/lib/db/repositories/audits';
 import { ensureLead, setLeadStatus } from '../src/lib/db/repositories/leads';
+import { recordEvent } from '../src/lib/db/repositories/sales';
 import { startRun, finishRun } from '../src/lib/db/repositories/runs';
 import { auditCompany } from '../src/lib/audit';
 import { parseArgs } from './args';
@@ -70,6 +71,10 @@ export async function runAudit(
 
       const leadId = ensureLead(company.id);
       setLeadStatus(leadId, 'analyzed');
+      recordEvent(leadId, 'website_audited', { status: result.website.status });
+      if (result.social.length > 0) {
+        recordEvent(leadId, 'social_audited', { profiles: result.social.length });
+      }
 
       if (result.website.status === 'ok') withWebsite += 1;
       else if (result.website.status === 'no_website') withoutWebsite += 1;

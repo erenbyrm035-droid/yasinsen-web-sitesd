@@ -141,6 +141,8 @@ hazır — geçiş yalnızca `src/lib/db/client.ts` ve repository gövdelerini e
 
 ## Dokümanlar
 
+- [`docs/CRM.md`](docs/CRM.md) — satış takip merkezi: durumlar, arama akışı, takip, teklif
+
 | Belge | İçerik |
 |---|---|
 | [`docs/SCORING.md`](docs/SCORING.md) | Her puanın nereden geldiği — formüller, ağırlıklar, eşikler, kural tablosu |

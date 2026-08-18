@@ -3,9 +3,14 @@ import { loadEnv } from '../src/lib/env';
 loadEnv();
 
 import { initSchema, closeDb } from '../src/lib/db/client';
-import { upsertCompany, upsertContact } from '../src/lib/db/repositories/companies';
+import {
+  upsertCompany,
+  upsertContact,
+  getCompanyBySourceRef,
+} from '../src/lib/db/repositories/companies';
 import { ensureLead, setPrimaryContact } from '../src/lib/db/repositories/leads';
 import { startRun, finishRun } from '../src/lib/db/repositories/runs';
+import { recordEvent } from '../src/lib/db/repositories/sales';
 import { getSource } from '../src/lib/sources';
 import { parseArgs } from './args';
 
@@ -61,8 +66,13 @@ export async function runDiscover(options: {
   let inserted = 0;
 
   for (const company of companies) {
+    const existing = getCompanyBySourceRef(company.source, company.sourceRef);
     const companyId = upsertCompany(company);
     const leadId = ensureLead(companyId);
+
+    // Yeni kesfedilen lead zaman cizelgesinde bir olay birakir. Tekrar
+    // kesfedilen isletmede olay uretilmez — cizelge kirlenmesin.
+    if (!existing) recordEvent(leadId, 'lead_discovered', { source: company.source });
 
     for (const contact of company.contacts ?? []) {
       const contactId = upsertContact(companyId, contact);

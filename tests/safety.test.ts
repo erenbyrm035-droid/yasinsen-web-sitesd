@@ -201,3 +201,50 @@ describe('Sosyal medya kazima yasagi', () => {
     );
   });
 });
+
+describe('Satis CRM otomatik iletisim baslatmaz', () => {
+  /**
+   * Satis takibi eklenince yeni bir risk yuzeyi olustu: bir "Ara" butonu
+   * gercekten arama BASLATABILIR, bir teklif akisi e-posta gonderebilirdi.
+   * Bu testler o sinirin korundugunu dogrular.
+   */
+  const sources = SOURCE_FILES;
+
+  test('tel: disinda otomatik cagri/mesaj protokolu kullanilmaz', () => {
+    for (const file of sources) {
+      const code = readFileSync(file, 'utf8');
+      // sms: ve whatsapp: seması mesaj taslagi acar — kullanici onayi olmadan
+      // iletisim baslatmaya en yakin sey budur, bu yuzden hic kullanilmaz.
+      assert.ok(
+        !/href=\{?["'`]sms:/i.test(code),
+        `${file} sms: baglantisi iceriyor`,
+      );
+      assert.ok(
+        !/wa\.me\/\d|api\.whatsapp\.com\/send/i.test(code) || file.includes('signals.ts'),
+        `${file} WhatsApp gonderim baglantisi iceriyor`,
+      );
+    }
+  });
+
+  test('arama sayaci yalnizca kullanici kaydiyla artar', () => {
+    const repo = readFileSync(join(ROOT, 'src/lib/db/repositories/sales.ts'), 'utf8');
+    const increments = repo.match(/call_count\s*\+\s*1/g) ?? [];
+    assert.equal(
+      increments.length,
+      1,
+      'call_count tek bir yerde artmali (logCall) — "Ara" tiklamasi sayaci artirmamali',
+    );
+
+    // "Ara" butonu yalnizca tel: acar, sunucuya hicbir sey yazmaz.
+    const actions = readFileSync(join(ROOT, 'src/app/components/LeadActions.tsx'), 'utf8');
+    assert.ok(!/call_count|logCall|fetch\(/.test(actions), 'Ara butonu sayac yazmamali');
+  });
+
+  test('satis aksiyonlarinda dis servise istek yok', () => {
+    const actions = readFileSync(join(ROOT, 'src/app/actions/sales.ts'), 'utf8');
+    assert.ok(
+      !/fetch\(|axios|http\.request|https:\/\//.test(actions),
+      'satis aksiyonlari disari istek atmamali',
+    );
+  });
+});

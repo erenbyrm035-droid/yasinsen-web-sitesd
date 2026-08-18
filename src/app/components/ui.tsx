@@ -106,3 +106,93 @@ export function Section({
     </section>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Satis takibi
+// ---------------------------------------------------------------------------
+
+import { SALES_STATUS_LABEL, telHref, type SalesStatus } from '@/lib/sales';
+
+/**
+ * Satis durumu rozeti.
+ * Renkler surecin yonunu anlatir: notr -> ilerleme -> kazanc / kayip.
+ * Bilincli olarak az renk: tabloda goz once HOT lead'lere gitmeli.
+ */
+const STATUS_STYLE: Record<SalesStatus, string> = {
+  NEW: 'bg-[#232b45] text-[#9aa4bd]',
+  READY_TO_CALL: 'bg-[#5b8cff]/15 text-[#8fb0ff]',
+  CALLED: 'bg-[#45c0d6]/15 text-[#7fd8e8]',
+  NO_ANSWER: 'bg-[#6b7592]/15 text-[#9aa4bd]',
+  CALLBACK: 'bg-[#ffab2e]/15 text-[#ffc46b]',
+  INTERESTED: 'bg-[#4ade80]/15 text-[#7ee8a5]',
+  NOT_INTERESTED: 'bg-[#6b7592]/15 text-[#8b94ad]',
+  OFFER_SENT: 'bg-[#a78bfa]/15 text-[#c4b0fd]',
+  NEGOTIATION: 'bg-[#a78bfa]/20 text-[#d0c0fe]',
+  WON: 'bg-[#4ade80]/25 text-[#8ff0b5]',
+  LOST: 'bg-[#ff5a4d]/15 text-[#ff8b81]',
+  DO_NOT_CONTACT: 'bg-[#ff5a4d]/10 text-[#c98a84]',
+};
+
+export function StatusBadge({ status }: { status: SalesStatus }) {
+  return (
+    <span
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[status]}`}
+    >
+      {SALES_STATUS_LABEL[status]}
+    </span>
+  );
+}
+
+/**
+ * Telefon aksiyonu.
+ *
+ * Bu buton YALNIZCA telefon uygulamasini acar; arama sayacini ARTIRMAZ.
+ * Kullanici telefonu gercekten actiktan sonra "Arandı" butonuna basar.
+ * Boylece sayac gercek gorusmeleri sayar, tiklamalari degil.
+ */
+export function CallButton({ phone, compact = false }: { phone: string | null; compact?: boolean }) {
+  if (!phone) {
+    return <span className="text-xs text-[#6b7592]">telefon yok</span>;
+  }
+  return (
+    <a
+      href={telHref(phone)}
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-[#5b8cff] font-medium text-white transition-colors hover:bg-[#4a7bee] ${
+        compact ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-sm'
+      }`}
+      title={`${phone} — telefon uygulamasını açar, arama sayacını artırmaz`}
+    >
+      📞 Ara
+    </a>
+  );
+}
+
+/** Skor yerine "ölçülemedi" gosterimi — 0 yazmak yanlis okunurdu. */
+export function WebsiteScoreCell({
+  score,
+  status,
+}: {
+  score: number | null;
+  status: string | null;
+}) {
+  if (score === null) {
+    return (
+      <span
+        className="inline-flex whitespace-nowrap rounded bg-[#3a2a15] px-2 py-0.5 text-[11px] text-[#e0a458]"
+        title={`Durum: ${status ?? 'bilinmiyor'} — otomatik denetim yapılamadı`}
+      >
+        ölçülemedi
+      </span>
+    );
+  }
+  return <ScoreCell score={score} />;
+}
+
+export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#232b45] bg-[#11172a] p-10 text-center">
+      <p className="text-sm text-[#8b94ad]">{title}</p>
+      {hint ? <p className="mt-2 text-xs text-[#6b7592]">{hint}</p> : null}
+    </div>
+  );
+}

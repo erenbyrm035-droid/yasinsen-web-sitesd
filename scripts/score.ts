@@ -7,6 +7,7 @@ import { listCompanies } from '../src/lib/db/repositories/companies';
 import { latestWebsiteAudit } from '../src/lib/db/repositories/audits';
 import { startRun, finishRun } from '../src/lib/db/repositories/runs';
 import { scoreCompany } from '../src/lib/scoring/score-company';
+import { markReadyToCall, recordEvent } from '../src/lib/db/repositories/sales';
 import { resolveCompanySocial } from '../src/lib/social-resolution';
 import { buildAnalysis } from '../src/lib/ai/reasoner';
 import type { Priority } from '../src/lib/types';
@@ -44,6 +45,10 @@ export async function runScore(options: { limit?: number; quiet?: boolean } = {}
     const { score, offer } = result;
     byPriority[score.priority] += 1;
     scored += 1;
+    recordEvent(result.leadId, 'lead_scored', {
+      purchaseScore: score.purchaseScore,
+      priority: score.priority,
+    });
 
     console.log(
       `  · ${company.name} — purchase ${score.purchaseScore} (${score.priority}) ` +
@@ -70,11 +75,19 @@ export async function runScore(options: { limit?: number; quiet?: boolean } = {}
     }
   }
 
-  const stats = { scored, skipped, byPriority };
+  /**
+   * Analizi biten ve TELEFONU OLAN lead'ler aranmaya hazir isaretlenir.
+   * Yalnizca NEW durumundakiler tasinir — elle degistirilmis satis
+   * durumlari (ilgilenmedi, teklif gonderildi...) korunur.
+   */
+  const readied = markReadyToCall();
+
+  const stats = { scored, skipped, byPriority, readied };
   finishRun(runId, stats);
   console.log(
     `[score] Bitti — ${scored} lead skorlandı (${skipped} atlandı). ` +
-      `HOT ${byPriority.HOT} · HIGH ${byPriority.HIGH} · MEDIUM ${byPriority.MEDIUM} · LOW ${byPriority.LOW}`,
+      `HOT ${byPriority.HOT} · HIGH ${byPriority.HIGH} · MEDIUM ${byPriority.MEDIUM} · LOW ${byPriority.LOW}` +
+      (readied > 0 ? ` · ${readied} lead aranmaya hazır` : ''),
   );
 
   return { scored, skipped, byPriority };

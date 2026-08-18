@@ -43,6 +43,11 @@ const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
   { table: 'website_audits', column: 'manual_review', definition: 'INTEGER NOT NULL DEFAULT 0' },
   { table: 'social_audits', column: 'status', definition: "TEXT NOT NULL DEFAULT 'on_site'" },
   { table: 'social_audits', column: 'match_info', definition: 'TEXT' },
+  // Satis takibi. leads.status (pipeline) ile karistirilmamali.
+  { table: 'leads', column: 'sales_status', definition: "TEXT NOT NULL DEFAULT 'NEW'" },
+  { table: 'leads', column: 'last_called_at', definition: 'TEXT' },
+  { table: 'leads', column: 'call_count', definition: 'INTEGER NOT NULL DEFAULT 0' },
+  { table: 'leads', column: 'next_follow_up_at', definition: 'TEXT' },
 ];
 
 /**

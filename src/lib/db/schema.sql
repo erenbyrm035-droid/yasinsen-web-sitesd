@@ -197,3 +197,61 @@ CREATE TABLE IF NOT EXISTS audit_runs (
   finished_at TEXT,
   stats       TEXT   -- JSON
 );
+
+-- ===========================================================================
+-- SATIS TAKIBI
+--
+-- Pipeline durumu (leads.status: discovered/analyzed/scored) ile SATIS durumu
+-- ayri tutulur. Birincisi "sistem bu lead'i isledi mi", ikincisi "satis sureci
+-- nerede". Ayni kolona sikistirmak ikisini de bozardi.
+-- ===========================================================================
+
+-- call_logs — her gorusme bir satir. Gecmis asla guncellenmez, eklenir.
+CREATE TABLE IF NOT EXISTS call_logs (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id           INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
+  called_at         TEXT    NOT NULL DEFAULT (datetime('now')),
+  -- 'REACHED' | 'NO_ANSWER' | 'INTERESTED' | 'NOT_INTERESTED'
+  -- | 'ASKED_OFFER' | 'CALLBACK' | 'WRONG_NUMBER'
+  result            TEXT    NOT NULL,
+  notes             TEXT,
+  next_follow_up_at TEXT,
+  created_at        TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_call_logs_lead ON call_logs (lead_id, called_at DESC);
+
+-- follow_ups — planlanan takipler. Bir lead'in ayni anda tek acik takibi olur.
+CREATE TABLE IF NOT EXISTS follow_ups (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id       INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
+  scheduled_at  TEXT    NOT NULL,
+  status        TEXT    NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'DONE', 'CANCELLED')),
+  notes         TEXT,
+  completed_at  TEXT,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_follow_ups_open ON follow_ups (status, scheduled_at);
+
+-- offers — gonderilen teklifler
+CREATE TABLE IF NOT EXISTS offers (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id    INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
+  service    TEXT    NOT NULL,
+  amount     REAL,              -- TL; girilmediyse NULL (tahmin edilmez)
+  sent_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  status     TEXT    NOT NULL DEFAULT 'SENT' CHECK (status IN ('SENT', 'WON', 'LOST')),
+  notes      TEXT,
+  closed_at  TEXT,
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_offers_lead ON offers (lead_id, sent_at DESC);
+
+-- sales_events — zaman cizelgesinin kaynagi. Silinmez, yalnizca eklenir.
+CREATE TABLE IF NOT EXISTS sales_events (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id    INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
+  event_type TEXT    NOT NULL,
+  event_data TEXT,              -- JSON
+  created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_sales_events_lead ON sales_events (lead_id, created_at);

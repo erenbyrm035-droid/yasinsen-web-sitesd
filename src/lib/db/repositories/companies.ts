@@ -42,8 +42,112 @@ export interface ContactRow {
  * Guncellemede COALESCE kullaniliyor: yeni kayitta bir alan null ise eski
  * (muhtemelen elle girilmis) deger korunur.
  */
+/** Kaynak + kaynak referansiyla birebir eslesen kayit. */
+export function getCompanyBySourceRef(source: string, sourceRef: string): CompanyRow | undefined {
+  return getDb()
+    .prepare('SELECT * FROM companies WHERE source = ? AND source_ref = ?')
+    .get(source, sourceRef) as CompanyRow | undefined;
+}
+
+/** Turkce karakterleri katlayip yalnizca harf/rakam birakir. */
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/ı/g, 'i').replace(/İ/g, 'i').replace(/ş/g, 's')
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  // Son 10 hane: 0212..., +90212..., 212... hepsi ayni numaraya iner.
+  return digits.slice(-10);
+}
+
+/**
+ * MUKERRER KONTROLU
+ *
+ * Ayni isletme farkli kaynaklardan (OSM ve Places) ya da degismis bir
+ * source_ref ile tekrar gelebilir. Kimlik sirasi guclu -> zayif:
+ *
+ *   1. kaynak + kaynak referansi (Google Place ID dahil) — kesin
+ *   2. website alan adi                                  — cok guclu
+ *   3. telefon (son 10 hane)                             — guclu
+ *   4. normalize edilmis isim + ilce                     — zayif, ilce sarti sart
+ *
+ * 4. adimda ilce sarti bilincli: "Fit Life" adinda iki ayri salon farkli
+ * ilcelerde olabilir ve bunlari birlestirmek gercek bir lead'i yok ederdi.
+ */
+export function findDuplicateCompany(c: DiscoveredCompany): CompanyRow | undefined {
+  const db = getDb();
+
+  const exact = getCompanyBySourceRef(c.source, c.sourceRef);
+  if (exact) return exact;
+
+  if (c.domain) {
+    const byDomain = db.prepare('SELECT * FROM companies WHERE domain = ?').get(c.domain) as
+      | CompanyRow
+      | undefined;
+    if (byDomain) return byDomain;
+  }
+
+  if (c.phone) {
+    const phone = normalizePhone(c.phone);
+    if (phone.length === 10) {
+      const rows = db
+        .prepare("SELECT * FROM companies WHERE phone IS NOT NULL AND phone <> ''")
+        .all() as CompanyRow[];
+      const byPhone = rows.find((r) => r.phone && normalizePhone(r.phone) === phone);
+      if (byPhone) return byPhone;
+    }
+  }
+
+  if (c.locationDistrict) {
+    const name = normalizeName(c.name);
+    const rows = db
+      .prepare('SELECT * FROM companies WHERE location_district = ?')
+      .all(c.locationDistrict) as CompanyRow[];
+    const byName = rows.find((r) => normalizeName(r.name) === name);
+    if (byName) return byName;
+  }
+
+  return undefined;
+}
+
 export function upsertCompany(c: DiscoveredCompany): number {
   const db = getDb();
+
+  /**
+   * Farkli bir kaynaktan gelen ayni isletme: yeni satir ACILMAZ, mevcut
+   * kayit zenginlestirilir. COALESCE sirasi yeni veriyi one alir ama
+   * eksik alanlarda eskiyi korur.
+   */
+  const duplicate = findDuplicateCompany(c);
+  if (duplicate && !(duplicate.source === c.source && duplicate.source_ref === c.sourceRef)) {
+    db.prepare(
+      `UPDATE companies SET
+         website           = COALESCE(@website, website),
+         domain            = COALESCE(@domain, domain),
+         location_city     = COALESCE(@city, location_city),
+         location_district = COALESCE(@district, location_district),
+         lat               = COALESCE(@lat, lat),
+         lon               = COALESCE(@lon, lon),
+         industry          = COALESCE(@industry, industry),
+         employee_count    = COALESCE(@employeeCount, employee_count),
+         phone             = COALESCE(@phone, phone),
+         rating            = COALESCE(@rating, rating),
+         review_count      = COALESCE(@reviewCount, review_count),
+         updated_at        = datetime('now')
+       WHERE id = @id`,
+    ).run({
+      id: duplicate.id,
+      website: c.website, domain: c.domain, city: c.locationCity,
+      district: c.locationDistrict, lat: c.lat, lon: c.lon,
+      industry: c.industry, employeeCount: c.employeeCount, phone: c.phone,
+      rating: c.rating, reviewCount: c.reviewCount,
+    });
+    return duplicate.id;
+  }
   const stmt = db.prepare(`
     INSERT INTO companies (
       name, website, domain, location_city, location_district, lat, lon,

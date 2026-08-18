@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getLeadDetail } from '@/lib/db/repositories/views';
+import { getSalesLead } from '@/lib/db/repositories/sales-views';
+import { listCalls, listEvents, listOffers } from '@/lib/db/repositories/sales';
+import { SalesPanel } from './SalesPanel';
+import { Timeline, toEntries } from './Timeline';
+import { StatusBadge } from '../../components/ui';
 import { buildAnalysis } from '@/lib/ai/reasoner';
 import { PriorityBadge, ScoreCell, Section, NoData } from '../../components/ui';
 import { ManualSocialForm } from './ManualSocialForm';
@@ -28,6 +33,12 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   if (!detail) notFound();
 
   const { company, contacts, websiteAudit, socialAudits, manualInputs, score, offer } = detail;
+
+  // Satis tarafi: mevcut analiz verisine DOKUNMADAN ayri okunur.
+  const sales = getSalesLead(leadId);
+  const calls = listCalls(leadId);
+  const offers = listOffers(leadId);
+  const timeline = toEntries(listEvents(leadId));
 
   // Form varsayilani: elle veri girilmis ilk platform, yoksa tespit edilen ilk
   // platform, o da yoksa Instagram.
@@ -66,7 +77,13 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               .join(' · ')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {offer && (
+            <div className="text-right">
+              <div className="text-xs uppercase tracking-wider text-[#8b94ad]">Önerilen hizmet</div>
+              <div className="text-sm font-medium text-[#e8ecf5]">{offer.offerLabel}</div>
+            </div>
+          )}
           {score && (
             <div className="text-right">
               <div className="text-xs uppercase tracking-wider text-[#8b94ad]">Purchase Score</div>
@@ -74,8 +91,42 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
             </div>
           )}
           <PriorityBadge priority={score?.priority ?? null} />
+          {sales ? <StatusBadge status={sales.salesStatus} /> : null}
         </div>
       </header>
+
+      {/* Hizli kunye — aramadan once bakilacak her sey tek satirda. */}
+      <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-[#232b45] bg-[#11172a] px-4 py-3 text-sm">
+        {company.phone ? (
+          <span className="font-mono text-[#e8ecf5]">{company.phone}</span>
+        ) : (
+          <span className="text-xs text-[#6b7592]">telefon yok</span>
+        )}
+        {company.website ? (
+          <a href={company.website} target="_blank" rel="noreferrer noopener"
+             className="text-[#5b8cff] underline-offset-4 hover:underline">website ↗</a>
+        ) : (
+          <span className="text-xs text-[#6b7592]">website yok</span>
+        )}
+        {sales?.socialProfile ? (
+          <a href={sales.socialProfile} target="_blank" rel="noreferrer noopener"
+             className="text-[#5b8cff] underline-offset-4 hover:underline">sosyal profil ↗</a>
+        ) : (
+          <span className="text-xs text-[#6b7592]">sosyal profil yok</span>
+        )}
+        {sales?.mapsUrl ? (
+          <a href={sales.mapsUrl} target="_blank" rel="noreferrer noopener"
+             className="text-[#5b8cff] underline-offset-4 hover:underline">Google Maps ↗</a>
+        ) : null}
+        {company.rating !== null && company.rating !== undefined ? (
+          <span className="text-[#b8c0d4]">
+            ★ {company.rating}
+            <span className="ml-1 text-xs text-[#6b7592]">({company.review_count ?? 0} yorum)</span>
+          </span>
+        ) : (
+          <span className="text-xs text-[#6b7592]">Google puanı yok</span>
+        )}
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* --- Sol kolon --------------------------------------------------- */}
@@ -376,6 +427,38 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               )}
             </Section>
           )}
+
+          {sales ? (
+            <SalesPanel
+              leadId={leadId}
+              company={company.name}
+              phone={company.phone}
+              status={sales.salesStatus}
+              callCount={sales.callCount}
+              lastCalledAt={sales.lastCalledAt}
+              nextFollowUpAt={sales.nextFollowUpAt}
+              calls={calls.map((c) => ({
+                id: c.id,
+                calledAt: c.called_at,
+                result: c.result,
+                notes: c.notes,
+                nextFollowUpAt: c.next_follow_up_at,
+              }))}
+              offers={offers.map((o) => ({
+                id: o.id,
+                service: o.service,
+                amount: o.amount,
+                sentAt: o.sent_at,
+                status: o.status,
+                notes: o.notes,
+              }))}
+              suggestedService={offer?.offerLabel ?? null}
+            />
+          ) : null}
+
+          <Section title="Satış zaman çizelgesi" subtitle="Tamamen veritabanından üretilir">
+            <Timeline entries={timeline} />
+          </Section>
 
           {offer && offer.digitalGaps.length > 0 && (
             <Section title="Digital Gaps" subtitle="Denetimde kalan maddeler, ağırlık sırasıyla">
