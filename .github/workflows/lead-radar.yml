@@ -34,8 +34,10 @@ jobs:
     timeout-minutes: 45
 
     permissions:
-      # Raporu depoya islemek icin gerekli. Baska hicbir yetki istenmiyor.
+      # Raporu depoya islemek icin gerekli.
       contents: write
+      # Onceki calistirmanin veritabani artefaktini indirmek icin gerekli.
+      actions: read
 
     steps:
       - name: Depoyu al
@@ -49,6 +51,62 @@ jobs:
 
       - name: Bağımlılıkları kur
         run: npm ci
+
+      # Onceki calistirmanin veritabanini geri yukle.
+      #
+      # Bu adim olmadan her calistirma SIFIRDAN basliyordu: lead'ler yeniden
+      # kesfediliyor, gecmis skorlar kayboluyordu. Artik ayni dosyada satis
+      # verisi de duruyor (gorusme kayitlari, takipler, teklifler) — onu
+      # kaybetmek kabul edilemez.
+      #
+      # Ucuncu parti action yerine runner'da hazir gelen `gh` kullaniliyor:
+      # tedarik zincirine yeni bagimlilik eklemiyoruz.
+      #
+      # Artefakt yoksa (ilk calistirma ya da 14 gunluk saklama suresi dolmus)
+      # is akisi yine calisir, sadece bos veritabaniyla baslar.
+      - name: Önceki veritabanını geri yükle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p data
+          last_run="$(gh run list \
+            --workflow lead-radar.yml \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId' 2>/dev/null || true)"
+
+          if [ -z "$last_run" ] || [ "$last_run" = "null" ]; then
+            echo "Önceki başarılı çalıştırma yok — sıfırdan başlanıyor."
+          else
+            echo "Son başarılı çalıştırma: $last_run"
+            gh run download "$last_run" --dir data-restore 2>/dev/null || \
+              echo "Artefakt indirilemedi (süresi dolmuş olabilir)."
+          fi
+
+          found="$(find data-restore -name 'viva.db' -print -quit 2>/dev/null || true)"
+          if [ -n "$found" ]; then
+            cp "$found" data/viva.db
+            echo "Veritabanı geri yüklendi ($(du -h data/viva.db | cut -f1))."
+          else
+            echo "Geri yüklenecek veritabanı bulunamadı."
+          fi
+
+      # Calistirma oncesi satis verisi sayilir; sonrasinda azalirsa is durur.
+      - name: Satış verisini say
+        run: |
+          node -e "
+            const fs = require('fs');
+            if (!fs.existsSync('data/viva.db')) { console.log('CALLS_BEFORE=0'); process.exit(0); }
+            const D = require('better-sqlite3');
+            const db = new D('data/viva.db', { readonly: true });
+            const n = (q) => { try { return db.prepare(q).get().n; } catch { return 0; } };
+            const calls = n('SELECT COUNT(*) n FROM call_logs');
+            const offers = n('SELECT COUNT(*) n FROM offers');
+            console.log('Mevcut — lead:', n('SELECT COUNT(*) n FROM leads'),
+                        '| görüşme:', calls, '| teklif:', offers);
+            fs.appendFileSync(process.env.GITHUB_ENV, 'CALLS_BEFORE=' + calls + '\\n');
+          "
 
       - name: Testleri çalıştır
         # Bozuk bir skorlama mantigiyla rapor uretmeyelim.
@@ -66,6 +124,7 @@ jobs:
           GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
           GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
         run: |
+          # db:init mevcut tablolari KORUR, yalnizca eksik olanlari ekler.
           npm run db:init
           npm run pipeline -- \
             --limit "${{ github.event.inputs.limit || '100' }}" \
@@ -73,6 +132,24 @@ jobs:
             --source "${{ github.event.inputs.source || 'places' }}" \
             --concurrency 5 \
             --quiet
+
+      # Satis verisinin calistirma sirasinda kaybolmadigini dogrula.
+      # Kaybolduysa is akisi burada durur ve artefakt yine de yuklenir.
+      # Pipeline satis verisine dokunmamali. Dokunduysa burada yakalanir.
+      - name: Satış verisi korundu mu
+        run: |
+          node -e "
+            const D = require('better-sqlite3');
+            const db = new D('data/viva.db', { readonly: true });
+            const n = (q) => { try { return db.prepare(q).get().n; } catch { return 0; } };
+            const calls = n('SELECT COUNT(*) n FROM call_logs');
+            console.log('Çalıştırma sonrası görüşme kaydı:', calls);
+            const before = Number(process.env.CALLS_BEFORE || 0);
+            if (calls < before) {
+              console.error('HATA: görüşme kaydı azaldı (' + before + ' -> ' + calls + '). Pipeline satış verisini silmiş.');
+              process.exit(1);
+            }
+          "
 
       - name: Rapor üret
         run: npm run report

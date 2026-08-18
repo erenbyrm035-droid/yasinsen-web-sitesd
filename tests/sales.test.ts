@@ -280,3 +280,65 @@ describe('Donusum oranlari', () => {
     assert.equal(stats.rates.callToContact, 50);
   });
 });
+
+describe('Pipeline satis verisini bozmaz', () => {
+  /**
+   * Zamanlanmis tarama ayni isletmeleri tekrar kesfeder. Bu, uzerine
+   * gorusme kaydi ve teklif islenmis bir lead'i sifirlamamali — aksi halde
+   * her gece satis gecmisi silinirdi.
+   */
+  test('yeniden kesif gorusme, teklif ve durumu korur', () => {
+    const db = getDb();
+    const company = db
+      .prepare(
+        `INSERT INTO companies (name, phone, segment, location_district, source, source_ref, raw)
+         VALUES ('Yeniden Kesif', '0555 999 88 77', 'gym', 'Kadıköy', 'places', 'ref-x', '{}')
+         RETURNING id`,
+      )
+      .get() as { id: number };
+    const lead = db
+      .prepare('INSERT INTO leads (company_id) VALUES (?) RETURNING id')
+      .get(company.id) as { id: number };
+
+    sales.logCall({ leadId: lead.id, result: 'INTERESTED', notes: 'Kritik kayıt' });
+    const offerId = sales.createOffer({ leadId: lead.id, service: 'Website', amount: 30000 });
+
+    // Pipeline'in yaptigi sey: ayni sirketi guncelle.
+    db.prepare(
+      "UPDATE companies SET website='https://yeni.com', rating=4.8, updated_at=datetime('now') WHERE id=?",
+    ).run(company.id);
+
+    assert.equal(sales.listCalls(lead.id).length, 1, 'görüşme kaydı silinmemeli');
+    assert.equal(sales.listOffers(lead.id).length, 1, 'teklif silinmemeli');
+    assert.equal(sales.listOffers(lead.id)[0].id, offerId);
+    assert.equal(sales.getSalesStatus(lead.id), 'OFFER_SENT', 'satış durumu korunmalı');
+  });
+
+  test('markReadyToCall satis surecindeki lead-i geri almaz', () => {
+    const db = getDb();
+    const company = db
+      .prepare(
+        `INSERT INTO companies (name, phone, segment, location_district, source, source_ref, raw)
+         VALUES ('Surecte', '0555 999 88 78', 'gym', 'Kadıköy', 'places', 'ref-y', '{}')
+         RETURNING id`,
+      )
+      .get() as { id: number };
+    const lead = db
+      .prepare('INSERT INTO leads (company_id) VALUES (?) RETURNING id')
+      .get(company.id) as { id: number };
+    db.prepare(
+      `INSERT INTO lead_scores (lead_id, business_potential, digital_gap,
+         estimated_buying_intent, purchase_score, priority, breakdown)
+       VALUES (?, 60, 50, 50, 70, 'HIGH', '{}')`,
+    ).run(lead.id);
+
+    sales.logCall({ leadId: lead.id, result: 'INTERESTED' });
+    sales.markReadyToCall();
+
+    assert.equal(
+      sales.getSalesStatus(lead.id),
+      'INTERESTED',
+      'gece taramasi ilgilenen lead-i "aranacak"a geri dondurmemeli',
+    );
+  });
+});
