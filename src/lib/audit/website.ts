@@ -1,4 +1,11 @@
-import type { AuditCheck, Confidence, WebsiteAuditResult, WebsiteRawSignals } from '../types';
+import type {
+  AuditCheck,
+  AuditConfidence,
+  WebsiteAuditResult,
+  WebsiteAuditStatus,
+  WebsiteRawSignals,
+} from '../types';
+import { detectBlockPage } from './blocking';
 import { fetchPage, probeUrl, fetchLighthouse, type FetchPageResult } from './fetcher';
 import {
   PATTERNS,
@@ -100,34 +107,66 @@ function performanceRatio(
   return { ratio: count === 0 ? 0 : total / count, evidence: parts.join(', ') };
 }
 
-function buildOfflineResult(reason: string, hasWebsite: boolean): WebsiteAuditResult {
-  const checks: AuditCheck[] = [
-    check(
-      'reachable',
-      'Website erişilebilir',
-      0,
-      hasWebsite ? reason : 'Kayıtlı website adresi yok',
-      WEIGHTS.reachable,
-    ),
-    // Diger maddeler olculemedi — 0 degil, null. "Kotu" ile "bilinmiyor" ayri seyler.
-    ...Object.entries(WEIGHTS)
-      .filter(([key]) => key !== 'reachable')
-      .map(([key, weight]) =>
-        check(key, LABELS[key as keyof typeof WEIGHTS], null, 'Sayfa alınamadı', weight),
-      ),
-  ];
+/**
+ * Website hic kayitli degil.
+ *
+ * Bu OLCULEMEYEN bir durum degil, OLCULMUS bir bulgudur: isletmenin sitesi
+ * yok. Skor 0 ve guven yuksek — ve bu, satis acisindan en net firsatlardan
+ * biridir. Manuel incelemeye dusmez.
+ */
+function buildNoWebsiteResult(): WebsiteAuditResult {
+  const checks: AuditCheck[] = Object.entries(WEIGHTS).map(([key, weight]) =>
+    check(key, LABELS[key as keyof typeof WEIGHTS], 0, 'Kayıtlı website adresi yok', weight),
+  );
 
   return {
-    hasWebsite,
+    hasWebsite: false,
     httpStatus: null,
     finalUrl: null,
     checks,
     rawSignals: emptySignals(),
-    // Sitesi olmayan/acilmayan isletme dijital olarak sifir noktasindadir.
     score: 0,
-    // "Website yok" kesin bir bulgudur; "site acilmadi" ise gecici olabilir.
-    confidence: hasWebsite ? 'low' : 'high',
-    notes: hasWebsite ? reason : 'Kayıtlı website adresi yok',
+    confidence: 'high',
+    status: 'no_website',
+    reason: null,
+    manualReviewRequired: false,
+    notes: 'Kayıtlı website adresi yok',
+  };
+}
+
+/**
+ * Site var ama DENETLENEMEDI: sunucu hata dondu, hic yanit vermedi, ya da
+ * gelen sayfa bir bot korumasi / hata sayfasi.
+ *
+ * Burada tek bir kural gecerli: SKOR URETILMEZ.
+ * Elimizdeki HTML isletmenin sitesi degil; onu puanlamak "siteniz kotu"
+ * hukmunu uydurmak olur. Skor null, guven 'none', tum maddeler null.
+ *
+ * Lead SILINMEZ — elle incelemeye alinir. Site muhtemelen gayet calisiyordur,
+ * sadece bizim otomatik istegimize kapali.
+ */
+function buildUnmeasurableResult(args: {
+  status: Extract<WebsiteAuditStatus, 'unreachable' | 'blocked' | 'unrendered'>;
+  reason: string;
+  httpStatus: number | null;
+  finalUrl: string | null;
+}): WebsiteAuditResult {
+  const checks: AuditCheck[] = Object.entries(WEIGHTS).map(([key, weight]) =>
+    check(key, LABELS[key as keyof typeof WEIGHTS], null, args.reason, weight),
+  );
+
+  return {
+    hasWebsite: true,
+    httpStatus: args.httpStatus,
+    finalUrl: args.finalUrl,
+    checks,
+    rawSignals: emptySignals(),
+    score: null,
+    confidence: 'none',
+    status: args.status,
+    reason: args.reason,
+    manualReviewRequired: true,
+    notes: args.reason,
   };
 }
 
@@ -171,18 +210,78 @@ function emptySignals(): WebsiteRawSignals {
 }
 
 export async function auditWebsite(website: string | null): Promise<WebsiteAuditResult> {
-  if (!website) return buildOfflineResult('Kayıtlı website adresi yok', false);
+  if (!website) return buildNoWebsiteResult();
   return auditWebsiteFromPage(await fetchPage(website));
+}
+
+/**
+ * Basarili sayilan HTTP durum araligi. 3xx zaten fetch tarafindan takip
+ * edildigi icin buraya son durum gelir.
+ */
+function isSuccessStatus(status: number | null): boolean {
+  return status !== null && status >= 200 && status < 400;
 }
 
 /**
  * Sayfa zaten getirilmisse tekrar indirmeden denetler.
  * Sosyal denetim ayni HTML'i kullandigi icin pipeline tek fetch yapar.
+ *
+ * Analiz oncesi UC KAPI var; hepsi gecilmeden sayfa denetlenmez:
+ *   1. Yanit alindi mi?
+ *   2. Durum kodu basarili mi? (400/401/403/404/429/500/502/503/504 ...)
+ *   3. Gelen icerik gercekten isletmenin sayfasi mi, yoksa challenge/hata mi?
  */
 export async function auditWebsiteFromPage(page: FetchPageResult): Promise<WebsiteAuditResult> {
-  if (!page.html || !page.finalUrl) {
-    return buildOfflineResult(`Sayfa alınamadı: ${page.error ?? `HTTP ${page.status}`}`, true);
+  // 1. Sunucuya hic ulasilamadi (DNS, baglanti reddi, zaman asimi).
+  if (page.status === null) {
+    return buildUnmeasurableResult({
+      status: 'unreachable',
+      reason: `Sunucuya ulaşılamadı: ${page.error ?? 'yanıt yok'}`,
+      httpStatus: null,
+      finalUrl: page.finalUrl,
+    });
   }
+
+  // 2. Sunucu yanit verdi ama hata kodu dondu. Govdedeki HTML isletmenin
+  //    sayfasi degil, sunucunun hata ciktisi — analiz edilmez.
+  if (!isSuccessStatus(page.status)) {
+    const block = detectBlockPage(page.html, page.status);
+    const vendorNote = block.vendor ? ` (${block.vendor} bot koruması)` : '';
+    return buildUnmeasurableResult({
+      status: block.kind === 'blocked' ? 'blocked' : 'unreachable',
+      reason: `HTTP ${page.status}${vendorNote} — sayfa denetlenemedi`,
+      httpStatus: page.status,
+      finalUrl: page.finalUrl,
+    });
+  }
+
+  if (!page.html || !page.finalUrl) {
+    return buildUnmeasurableResult({
+      status: 'unreachable',
+      reason: `Sayfa içeriği alınamadı: ${page.error ?? `HTTP ${page.status}`}`,
+      httpStatus: page.status,
+      finalUrl: page.finalUrl,
+    });
+  }
+
+  // 3. Durum kodu basarili ama icerik challenge/hata sayfasi olabilir.
+  //    Bazi WAF'lar engel sayfasini HTTP 200 ile dondurur.
+  const block = detectBlockPage(page.html, page.status);
+  if (block.kind !== null) {
+    const STATUS_BY_KIND = {
+      blocked: { status: 'blocked' as const, prefix: 'Bot koruması sayfası geldi' },
+      error_page: { status: 'unreachable' as const, prefix: 'Hata sayfası geldi' },
+      unrendered: { status: 'unrendered' as const, prefix: 'Sayfa içeriği okunamadı' },
+    };
+    const mapped = STATUS_BY_KIND[block.kind];
+    return buildUnmeasurableResult({
+      status: mapped.status,
+      reason: `${mapped.prefix} — ${block.evidence}`,
+      httpStatus: page.status,
+      finalUrl: page.finalUrl,
+    });
+  }
+
   return analyzePage(page);
 }
 
@@ -491,7 +590,7 @@ async function analyzePage(page: FetchPageResult): Promise<WebsiteAuditResult> {
 
   // Guven: olculemeyen madde sayisi arttikca duser.
   const unmeasured = checks.length - measured.length;
-  const confidence: Confidence = unmeasured === 0 ? 'high' : unmeasured <= 2 ? 'medium' : 'low';
+  const confidence: AuditConfidence = unmeasured === 0 ? 'high' : unmeasured <= 2 ? 'medium' : 'low';
 
   return {
     hasWebsite: true,
@@ -501,6 +600,9 @@ async function analyzePage(page: FetchPageResult): Promise<WebsiteAuditResult> {
     rawSignals,
     score,
     confidence,
+    status: 'ok',
+    reason: null,
+    manualReviewRequired: false,
     notes: notes.length > 0 ? notes.join(' · ') : null,
   };
 }

@@ -1,4 +1,10 @@
-import type { AuditCheck, Confidence, OfferRecommendation, SocialConfidence } from '../types';
+import type {
+  AuditCheck,
+  AuditConfidence,
+  Confidence,
+  OfferRecommendation,
+  SocialConfidence,
+} from '../types';
 import { OFFER_LABELS, OFFER_RULES, type OfferRuleContext } from './rules';
 
 /**
@@ -10,7 +16,7 @@ import { OFFER_LABELS, OFFER_RULES, type OfferRuleContext } from './rules';
 export interface OfferEngineInput extends OfferRuleContext {
   checks: AuditCheck[];
   socialConfidence: SocialConfidence;
-  websiteConfidence: Confidence;
+  websiteConfidence: AuditConfidence;
 }
 
 /** Denetimde kalan maddeler = kapatilacak dijital bosluklar. */
@@ -43,6 +49,8 @@ export function recommendOffer(input: OfferEngineInput): OfferRecommendation {
  * en fazla 'medium' guven tasir.
  */
 function resolveConfidence(input: OfferEngineInput): Confidence {
+  // Website hic olculemediyse teklif de olculmus bir seye dayanmiyor demektir.
+  if (input.websiteConfidence === 'none') return 'low';
   if (input.websiteConfidence === 'low') return 'low';
   if (input.socialConfidence === 'none' && input.hasSocialPresence) return 'low';
   if (input.socialConfidence === 'low' || input.socialConfidence === 'none') return 'medium';

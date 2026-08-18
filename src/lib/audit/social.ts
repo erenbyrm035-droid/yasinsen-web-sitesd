@@ -1,11 +1,18 @@
 import type {
   SocialAuditResult,
+  SocialAuditStatus,
   SocialConfidence,
   SocialDataAvailability,
+  SocialMatch,
   SocialPlatform,
 } from '../types';
 import { fetchPage, probeUrl } from './fetcher';
-import { extractSocialLinks, hasSocialFeedEmbed, type SocialLink } from './signals';
+import { hasSocialFeedEmbed, type SocialLink } from './signals';
+import {
+  discoverSocialProfiles,
+  type DiscoveryCompany,
+  type DiscoveryOutcome,
+} from './social-discovery';
 
 /**
  * SOCIAL MEDIA AUDIT — sinyal bazli.
@@ -55,6 +62,16 @@ export interface SocialAuditInput {
   website: string | null;
   /** Website denetimi zaten HTML'i getirdiyse tekrar indirmemek icin. */
   html?: string | null;
+  /** Arama ile kesif ve kimlik dogrulamasi icin isletme bilgileri. */
+  company?: DiscoveryCompany;
+}
+
+export interface SocialAuditOutcome {
+  audits: SocialAuditResult[];
+  /** Hicbir profil bulunamadiysa nedeni — 'not_found' mu 'not_searched' mi. */
+  status: SocialAuditStatus;
+  detail: string;
+  rejected: DiscoveryOutcome['rejected'];
 }
 
 /**
@@ -62,46 +79,79 @@ export interface SocialAuditInput {
  * Website yoksa sosyal profil kesfedilecek dogrulanabilir bir kaynak da yok —
  * bos liste doner (tahmini handle uretilmez).
  */
-export async function auditSocial(input: SocialAuditInput): Promise<SocialAuditResult[]> {
+export async function auditSocial(input: SocialAuditInput): Promise<SocialAuditOutcome> {
   let html = input.html ?? null;
 
   if (!html && input.website) {
     const page = await fetchPage(input.website);
-    html = page.html;
+    // Sadece gercekten basarili yanitin HTML'i kullanilir; bot korumasi
+    // sayfasindan sosyal link cikarmanin anlami yok.
+    html = page.status !== null && page.status < 400 ? page.html : null;
   }
 
-  if (!html) return [];
+  const company: DiscoveryCompany = input.company ?? {
+    name: '',
+    website: input.website,
+    city: null,
+    district: null,
+    phone: null,
+  };
 
-  const links = extractSocialLinks(html);
-  if (links.length === 0) return [];
+  const discovery = await discoverSocialProfiles(company, html);
 
-  const feedEmbed = hasSocialFeedEmbed(html);
+  if (discovery.profiles.length === 0) {
+    return {
+      audits: [],
+      status: discovery.searched ? 'not_found' : 'not_searched',
+      detail: discovery.searchReason,
+      rejected: discovery.rejected,
+    };
+  }
+
+  const feedEmbed = html ? hasSocialFeedEmbed(html) : false;
   // Fold ustu / header bolgesi: linkin one cikip cikmadigina dair kaba gosterge.
-  const prominentArea = html.slice(0, 15_000);
+  const prominentArea = html ? html.slice(0, 15_000) : '';
 
-  const results: SocialAuditResult[] = [];
+  const audits: SocialAuditResult[] = [];
 
-  for (const link of links) {
-    const resolved = await probeUrl(link.url);
-    results.push(
-      buildResult(link, {
+  for (const profile of discovery.profiles) {
+    const resolved = await probeUrl(profile.link.url);
+    audits.push(
+      buildResult(profile.link, {
         resolved,
-        platformCount: links.length,
+        platformCount: discovery.profiles.length,
         feedEmbed,
-        prominent: prominentArea.includes(link.url),
+        // Arama ile bulunan profil sitede yer almadigi icin "one cikan
+        // konumda" olamaz; olculmemis sayilir.
+        prominent: profile.source === 'website' ? prominentArea.includes(profile.link.url) : null,
+        status: profile.source === 'website' ? 'on_site' : 'verified',
+        match: profile.match,
       }),
     );
   }
 
-  return results;
+  return {
+    audits,
+    status: discovery.profiles.some((p) => p.source === 'website') ? 'on_site' : 'verified',
+    detail: discovery.searchReason,
+    rejected: discovery.rejected,
+  };
 }
 
 function buildResult(
   link: SocialLink,
-  ctx: { resolved: boolean | null; platformCount: number; feedEmbed: boolean; prominent: boolean },
+  ctx: {
+    resolved: boolean | null;
+    platformCount: number;
+    feedEmbed: boolean;
+    prominent: boolean | null;
+    status: SocialAuditStatus;
+    match: SocialMatch;
+  },
 ): SocialAuditResult {
+  const onSite = ctx.status === 'on_site';
   const signals = {
-    linkOnSite: true,
+    linkOnSite: onSite,
     handleResolves: ctx.resolved,
     platformCount: ctx.platformCount,
     feedEmbedOnSite: ctx.feedEmbed,
@@ -112,8 +162,13 @@ function buildResult(
   let earned = 0;
   let achievable = 0;
 
-  earned += SIGNAL_WEIGHTS.linkOnSite;
-  achievable += SIGNAL_WEIGHTS.linkOnSite;
+  // "Sitede link var" sinyali yalnizca site okunabildiyse anlamlidir.
+  // Arama ile bulunan profilde bu sinyal olculmemis sayilir; yoklugu
+  // ceza olarak yazilmaz.
+  if (onSite) {
+    achievable += SIGNAL_WEIGHTS.linkOnSite;
+    earned += SIGNAL_WEIGHTS.linkOnSite;
+  }
 
   // Profil cozulemediyse (403/zaman asimi) bu sinyal skora hic katilmaz.
   if (ctx.resolved !== null) {
@@ -124,11 +179,15 @@ function buildResult(
   achievable += SIGNAL_WEIGHTS.platformCount;
   earned += SIGNAL_WEIGHTS.platformCount * Math.min(ctx.platformCount / 3, 1);
 
-  achievable += SIGNAL_WEIGHTS.feedEmbedOnSite;
-  if (ctx.feedEmbed) earned += SIGNAL_WEIGHTS.feedEmbedOnSite;
+  if (onSite) {
+    achievable += SIGNAL_WEIGHTS.feedEmbedOnSite;
+    if (ctx.feedEmbed) earned += SIGNAL_WEIGHTS.feedEmbedOnSite;
+  }
 
-  achievable += SIGNAL_WEIGHTS.linkPlacementProminent;
-  if (ctx.prominent) earned += SIGNAL_WEIGHTS.linkPlacementProminent;
+  if (ctx.prominent !== null) {
+    achievable += SIGNAL_WEIGHTS.linkPlacementProminent;
+    if (ctx.prominent) earned += SIGNAL_WEIGHTS.linkPlacementProminent;
+  }
 
   const score = achievable === 0 ? null : Math.round((earned / achievable) * 100);
 
@@ -144,6 +203,8 @@ function buildResult(
     dataAvailable: UNAVAILABLE_METRICS,
     score,
     confidence,
+    status: ctx.status,
+    match: ctx.match,
   };
 }
 

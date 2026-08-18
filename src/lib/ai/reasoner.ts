@@ -92,10 +92,22 @@ function deterministicReasoning(input: ReasonerInput): string {
 
   if (!websiteAudit.hasWebsite) {
     parts.push(`${input.companyName} için kayıtlı bir website bulunamadı.`);
-  } else if (websiteAudit.httpStatus === null) {
+  } else if (websiteAudit.status === 'blocked') {
     parts.push(
-      `${input.companyName} sitesine erişilemedi (${websiteAudit.notes ?? 'bağlantı kurulamadı'}) — ` +
-        'yayında olmayan bir site, acil yenileme ihtiyacına işaret ediyor.',
+      `${input.companyName} sitesi otomatik denetime kapalı (${websiteAudit.reason ?? 'bot koruması'}). ` +
+        'Site büyük olasılıkla sorunsuz çalışıyor; ölçemediğimiz için kalitesi hakkında ' +
+        'HİÇBİR hüküm verilmedi. Aramadan önce siteyi tarayıcıda açıp bakın.',
+    );
+  } else if (websiteAudit.status === 'unreachable' && websiteAudit.httpStatus !== null) {
+    parts.push(
+      `${input.companyName} sitesi denetlenemedi (${websiteAudit.reason ?? `HTTP ${websiteAudit.httpStatus}`}). ` +
+        'Sunucu yanıt verdi ama sayfayı vermedi — site skoru üretilmedi, elle bakılmalı.',
+    );
+  } else if (websiteAudit.httpStatus === null && websiteAudit.hasWebsite) {
+    parts.push(
+      `${input.companyName} sitesine hiç ulaşılamadı (${websiteAudit.reason ?? 'bağlantı kurulamadı'}) — ` +
+        'sunucu yanıt vermiyor. Yayında olmayan bir site acil yenileme ihtiyacına işaret ediyor, ' +
+        'ancak kalite skoru üretilmedi.',
     );
   } else {
     const topGaps = websiteAudit.checks
@@ -115,15 +127,17 @@ function deterministicReasoning(input: ReasonerInput): string {
       : `Sosyal sinyal skoru ${score.socialScore}/100 (yalnızca doğrulanabilir sinyaller; takipçi ve etkileşim verisi ölçülemedi).`,
   );
 
+  // Olculemeyen bilesenler (value === null) gerekce olarak gosterilemez.
   const intentDriver = [...score.breakdown.buyingIntentComponents]
-    .sort((a, b) => b.value * b.weight - a.value * a.weight)[0];
+    .filter((c) => c.value !== null)
+    .sort((a, b) => (b.value as number) * b.weight - (a.value as number) * a.weight)[0];
   if (intentDriver) {
     parts.push(`Satın alma sinyali ${score.estimatedBuyingIntent}/100; en güçlü etken: ${intentDriver.detail}`);
   }
 
   const potentialDriver = [...score.breakdown.businessPotentialComponents]
-    .filter((c) => c.weight > 0)
-    .sort((a, b) => b.value * b.weight - a.value * a.weight)[0];
+    .filter((c) => c.weight > 0 && c.value !== null)
+    .sort((a, b) => (b.value as number) * b.weight - (a.value as number) * a.weight)[0];
   if (potentialDriver) {
     parts.push(`İşletme potansiyeli ${score.businessPotential}/100; başlıca dayanak: ${potentialDriver.detail}`);
   }

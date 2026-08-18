@@ -83,8 +83,16 @@ export default function DashboardPage() {
                       >
                         {lead.company}
                       </Link>
-                      <div className="mt-0.5 text-xs text-[#6b7592]">
-                        {hostnameOf(lead.website)}
+                      <div className="mt-0.5 flex items-center gap-2 text-xs text-[#6b7592]">
+                        <span>{hostnameOf(lead.website)}</span>
+                        {lead.manualReview ? (
+                          <span
+                            className="rounded bg-[#3a2a15] px-1.5 py-0.5 text-[10px] font-medium text-[#e0a458]"
+                            title={lead.websiteReason ?? 'Otomatik denetim yapılamadı'}
+                          >
+                            elle inceleme
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -114,7 +122,16 @@ export default function DashboardPage() {
                     <td className="px-4 py-3 text-[#b8c0d4]">{lead.industry ?? '—'}</td>
                     <td className="px-4 py-3 text-[#b8c0d4]">{lead.location ?? '—'}</td>
                     <td className="px-4 py-3">
-                      <ScoreCell score={lead.websiteScore} />
+                      {lead.websiteScore === null && lead.websiteStatus !== 'no_website' ? (
+                        <span
+                          className="inline-flex items-center gap-1 rounded bg-[#3a2a15] px-1.5 py-0.5 text-[11px] text-[#e0a458]"
+                          title={lead.websiteReason ?? 'Site otomatik denetime kapalı'}
+                        >
+                          ölçülemedi
+                        </span>
+                      ) : (
+                        <ScoreCell score={lead.websiteScore} />
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <ScoreCell score={lead.socialScore} />

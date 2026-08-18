@@ -11,10 +11,10 @@ import type {
 interface LeadScoreRow {
   id: number;
   lead_id: number;
-  website_score: number;
+  website_score: number | null;
   social_score: number | null;
   business_potential: number;
-  digital_gap: number;
+  digital_gap: number | null;
   estimated_buying_intent: number;
   purchase_score: number;
   priority: Priority;

@@ -85,8 +85,12 @@ CREATE TABLE IF NOT EXISTS website_audits (
   final_url    TEXT,
   checks       TEXT    NOT NULL,  -- JSON: [{ key, label, passed, evidence, weight }]
   raw_signals  TEXT    NOT NULL,  -- JSON: olculen ham degerler
-  score        INTEGER NOT NULL,  -- 0-100
-  confidence   TEXT    NOT NULL CHECK (confidence IN ('low', 'medium', 'high')),
+  score        INTEGER,           -- 0-100; NULL = olculemedi (skor UYDURULMAZ)
+  confidence   TEXT    NOT NULL CHECK (confidence IN ('none', 'low', 'medium', 'high')),
+  -- 'ok' | 'no_website' | 'unreachable' | 'blocked'
+  status       TEXT    NOT NULL DEFAULT 'ok',
+  reason       TEXT,              -- skor neden uretilemedi (gercek HTTP kodu / engel turu)
+  manual_review INTEGER NOT NULL DEFAULT 0,  -- 1 = otomatik hukum verilemedi, insan bakmali
   notes        TEXT
 );
 
@@ -108,7 +112,10 @@ CREATE TABLE IF NOT EXISTS social_audits (
   signals        TEXT    NOT NULL,  -- JSON: olculebilen sinyaller
   data_available TEXT    NOT NULL,  -- JSON: { followers: false, post_frequency: false, ... }
   score          INTEGER,           -- 0-100, hic sinyal yoksa NULL
-  confidence     TEXT    NOT NULL CHECK (confidence IN ('none', 'low', 'medium', 'high'))
+  confidence     TEXT    NOT NULL CHECK (confidence IN ('none', 'low', 'medium', 'high')),
+  -- 'on_site' | 'verified' | 'unverified' | 'not_found' | 'not_searched' | 'manual'
+  status         TEXT    NOT NULL DEFAULT 'on_site',
+  match_info     TEXT               -- JSON: { source, score, signals[], query } — profil neden bu isletmeye ait sayildi
 );
 
 CREATE INDEX IF NOT EXISTS idx_social_audits_company ON social_audits (company_id, fetched_at DESC);
@@ -150,10 +157,10 @@ CREATE INDEX IF NOT EXISTS idx_social_manual_company ON social_manual_inputs (co
 CREATE TABLE IF NOT EXISTS lead_scores (
   id                     INTEGER PRIMARY KEY AUTOINCREMENT,
   lead_id                INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
-  website_score          INTEGER NOT NULL,
+  website_score          INTEGER,          -- NULL = site denetlenemedi (skor UYDURULMAZ)
   social_score           INTEGER,          -- NULL = olculebilir sosyal sinyal yok
   business_potential     INTEGER NOT NULL,
-  digital_gap            INTEGER NOT NULL,
+  digital_gap            INTEGER,          -- NULL = hicbir dijital sinyal olculemedi
   estimated_buying_intent INTEGER NOT NULL,
   purchase_score         INTEGER NOT NULL, -- 0-100
   priority               TEXT    NOT NULL CHECK (priority IN ('HOT', 'HIGH', 'MEDIUM', 'LOW')),

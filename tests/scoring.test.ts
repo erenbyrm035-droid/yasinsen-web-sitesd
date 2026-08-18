@@ -19,6 +19,7 @@ function scoreFor(overrides: Partial<ScoreInput> = {}) {
     hasPhone: true,
     isInstitutional: false,
     websiteScore: 50,
+    websiteConfidence: 'high',
     hasWebsite: true,
     websiteBroken: false,
     checks: [],
@@ -64,7 +65,7 @@ describe('Digital gap', () => {
   });
 
   test('yuksek website skoru dusuk gap uretir', () => {
-    assert.ok(computeDigitalGap(90, 90, 'high').gap < 15);
+    assert.ok((computeDigitalGap(90, 90, 'high').gap as number) < 15);
   });
 });
 
@@ -113,8 +114,11 @@ describe('Business potential', () => {
 describe('Purchase score', () => {
   test('formul 0.35·gap + 0.35·potansiyel + 0.30·niyet olarak uygulanir', () => {
     const result = scoreFor();
+    assert.notEqual(result.digitalGap, null);
     const expected = Math.round(
-      0.35 * result.digitalGap + 0.35 * result.businessPotential + 0.3 * result.estimatedBuyingIntent,
+      0.35 * (result.digitalGap as number) +
+        0.35 * result.businessPotential +
+        0.3 * result.estimatedBuyingIntent,
     );
     assert.equal(result.breakdown.purchase.base, expected);
   });
@@ -215,6 +219,8 @@ describe('Sosyal skor toplama', () => {
       handle: 'x',
       profileUrl: 'https://instagram.com/x',
       resolved: true,
+      status: 'on_site',
+      match: { source: 'website', score: 1, signals: ['test'], query: null },
       signals: {
         linkOnSite: true,
         handleResolves: true,

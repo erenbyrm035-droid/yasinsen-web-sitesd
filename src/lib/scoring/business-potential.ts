@@ -182,8 +182,10 @@ export function computeBusinessPotential(
     detail: input.hasPhone ? 'Telefon numarası kayıtlı' : 'Kayıtlı telefon yok',
   });
 
-  const achievable = components.reduce((sum, c) => sum + c.weight, 0);
-  const earned = components.reduce((sum, c) => sum + (c.value / 100) * c.weight, 0);
+  // Olculemeyen bilesen (value === null) ne paya ne paydaya girer.
+  const measured = components.filter((c) => c.value !== null);
+  const achievable = measured.reduce((sum, c) => sum + c.weight, 0);
+  const earned = measured.reduce((sum, c) => sum + ((c.value as number) / 100) * c.weight, 0);
   let score = Math.round((earned / achievable) * 100);
 
   // Kamu/universite tesisleri ticari satis hedefi degil.

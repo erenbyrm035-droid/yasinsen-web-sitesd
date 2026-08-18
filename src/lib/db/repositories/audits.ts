@@ -1,8 +1,11 @@
 import { getDb, parseJson } from '../client';
 import type {
   AuditCheck,
-  Confidence,
+  AuditConfidence,
   SocialAuditResult,
+  SocialAuditStatus,
+  SocialMatch,
+  WebsiteAuditStatus,
   SocialConfidence,
   SocialDataAvailability,
   SocialPlatform,
@@ -20,8 +23,11 @@ interface WebsiteAuditRow {
   final_url: string | null;
   checks: string;
   raw_signals: string;
-  score: number;
-  confidence: Confidence;
+  score: number | null;
+  confidence: AuditConfidence;
+  status: WebsiteAuditStatus;
+  reason: string | null;
+  manual_review: number;
   notes: string | null;
 }
 
@@ -37,6 +43,8 @@ interface SocialAuditRow {
   data_available: string;
   score: number | null;
   confidence: SocialConfidence;
+  status: SocialAuditStatus;
+  match_info: string | null;
 }
 
 export interface StoredWebsiteAudit extends WebsiteAuditResult {
@@ -55,8 +63,10 @@ export function insertWebsiteAudit(companyId: number, result: WebsiteAuditResult
   const row = getDb()
     .prepare(
       `INSERT INTO website_audits
-         (company_id, has_website, http_status, final_url, checks, raw_signals, score, confidence, notes)
-       VALUES (@companyId, @hasWebsite, @httpStatus, @finalUrl, @checks, @rawSignals, @score, @confidence, @notes)
+         (company_id, has_website, http_status, final_url, checks, raw_signals, score, confidence,
+          status, reason, manual_review, notes)
+       VALUES (@companyId, @hasWebsite, @httpStatus, @finalUrl, @checks, @rawSignals, @score, @confidence,
+               @status, @reason, @manualReview, @notes)
        RETURNING id`,
     )
     .get({
@@ -68,6 +78,9 @@ export function insertWebsiteAudit(companyId: number, result: WebsiteAuditResult
       rawSignals: JSON.stringify(result.rawSignals),
       score: result.score,
       confidence: result.confidence,
+      status: result.status,
+      reason: result.reason,
+      manualReview: result.manualReviewRequired ? 1 : 0,
       notes: result.notes,
     }) as { id: number };
 
@@ -78,8 +91,10 @@ export function insertSocialAudit(companyId: number, result: SocialAuditResult):
   const row = getDb()
     .prepare(
       `INSERT INTO social_audits
-         (company_id, platform, handle, profile_url, resolved, signals, data_available, score, confidence)
-       VALUES (@companyId, @platform, @handle, @profileUrl, @resolved, @signals, @dataAvailable, @score, @confidence)
+         (company_id, platform, handle, profile_url, resolved, signals, data_available, score, confidence,
+          status, match_info)
+       VALUES (@companyId, @platform, @handle, @profileUrl, @resolved, @signals, @dataAvailable, @score, @confidence,
+               @status, @matchInfo)
        RETURNING id`,
     )
     .get({
@@ -92,6 +107,8 @@ export function insertSocialAudit(companyId: number, result: SocialAuditResult):
       dataAvailable: JSON.stringify(result.dataAvailable),
       score: result.score,
       confidence: result.confidence,
+      status: result.status,
+      matchInfo: result.match === null ? null : JSON.stringify(result.match),
     }) as { id: number };
 
   return row.id;
@@ -109,6 +126,9 @@ function toWebsiteAudit(row: WebsiteAuditRow): StoredWebsiteAudit {
     rawSignals: parseJson<WebsiteRawSignals>(row.raw_signals, {} as WebsiteRawSignals),
     score: row.score,
     confidence: row.confidence,
+    status: row.status ?? 'ok',
+    reason: row.reason ?? null,
+    manualReviewRequired: row.manual_review === 1,
     notes: row.notes,
   };
 }
@@ -126,6 +146,8 @@ function toSocialAudit(row: SocialAuditRow): StoredSocialAudit {
     dataAvailable: parseJson<SocialDataAvailability>(row.data_available, {} as SocialDataAvailability),
     score: row.score,
     confidence: row.confidence,
+    status: row.status ?? 'on_site',
+    match: parseJson<SocialMatch | null>(row.match_info, null),
   };
 }
 

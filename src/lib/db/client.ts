@@ -38,7 +38,125 @@ export function getDb(): Database.Database {
 const ADDED_COLUMNS: { table: string; column: string; definition: string }[] = [
   { table: 'companies', column: 'rating', definition: 'REAL' },
   { table: 'companies', column: 'review_count', definition: 'INTEGER' },
+  { table: 'website_audits', column: 'status', definition: "TEXT NOT NULL DEFAULT 'ok'" },
+  { table: 'website_audits', column: 'reason', definition: 'TEXT' },
+  { table: 'website_audits', column: 'manual_review', definition: 'INTEGER NOT NULL DEFAULT 0' },
+  { table: 'social_audits', column: 'status', definition: "TEXT NOT NULL DEFAULT 'on_site'" },
+  { table: 'social_audits', column: 'match_info', definition: 'TEXT' },
 ];
+
+/**
+ * Kisit gevsetme goclari.
+ *
+ * SQLite'ta CHECK ve NOT NULL kisitlari ALTER TABLE ile degistirilemez —
+ * tablonun yeniden kurulmasi gerekir. website_audits.score baslangicta
+ * NOT NULL idi ve confidence yalnizca low/medium/high kabul ediyordu.
+ * Artik "olculemedi" durumunu temsil edebilmek icin ikisi de gevsetildi.
+ *
+ * Gecmis satirlar KORUNUR: veri kopyalanir, yalnizca kisit degisir.
+ */
+function relaxLeadScoreConstraints(db: Database.Database): void {
+  const table = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'lead_scores'")
+    .get() as { sql: string } | undefined;
+  if (!table) return;
+
+  const needsRebuild =
+    /website_score\s+INTEGER\s+NOT\s+NULL/i.test(table.sql) ||
+    /digital_gap\s+INTEGER\s+NOT\s+NULL/i.test(table.sql);
+  if (!needsRebuild) return;
+
+  db.exec('PRAGMA foreign_keys = OFF');
+  db.transaction(() => {
+    db.exec(`
+      CREATE TABLE lead_scores_new (
+        id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+        lead_id                 INTEGER NOT NULL REFERENCES leads (id) ON DELETE CASCADE,
+        website_score           INTEGER,
+        social_score            INTEGER,
+        business_potential      INTEGER NOT NULL,
+        digital_gap             INTEGER,
+        estimated_buying_intent INTEGER NOT NULL,
+        purchase_score          INTEGER NOT NULL,
+        priority                TEXT    NOT NULL CHECK (priority IN ('HOT', 'HIGH', 'MEDIUM', 'LOW')),
+        breakdown               TEXT    NOT NULL,
+        computed_at             TEXT    NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+    db.exec(`
+      INSERT INTO lead_scores_new
+        (id, lead_id, website_score, social_score, business_potential, digital_gap,
+         estimated_buying_intent, purchase_score, priority, breakdown, computed_at)
+      SELECT id, lead_id, website_score, social_score, business_potential, digital_gap,
+             estimated_buying_intent, purchase_score, priority, breakdown, computed_at
+      FROM lead_scores
+    `);
+    db.exec('DROP TABLE lead_scores');
+    db.exec('ALTER TABLE lead_scores_new RENAME TO lead_scores');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_lead_scores_lead ON lead_scores (lead_id, computed_at DESC)');
+  })();
+  db.exec('PRAGMA foreign_keys = ON');
+}
+
+function relaxWebsiteAuditConstraints(db: Database.Database): void {
+  const table = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'website_audits'")
+    .get() as { sql: string } | undefined;
+  if (!table) return;
+
+  const needsRebuild =
+    /score\s+INTEGER\s+NOT\s+NULL/i.test(table.sql) ||
+    !/confidence[^)]*'none'/i.test(table.sql);
+  if (!needsRebuild) return;
+
+  const columns = (db.prepare('PRAGMA table_info(website_audits)').all() as { name: string }[]).map(
+    (c) => c.name,
+  );
+  const shared = [
+    'id',
+    'company_id',
+    'fetched_at',
+    'has_website',
+    'http_status',
+    'final_url',
+    'checks',
+    'raw_signals',
+    'score',
+    'confidence',
+    'notes',
+  ].filter((c) => columns.includes(c));
+
+  db.exec('PRAGMA foreign_keys = OFF');
+  db.transaction(() => {
+    db.exec(`
+      CREATE TABLE website_audits_new (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        company_id    INTEGER NOT NULL REFERENCES companies (id) ON DELETE CASCADE,
+        fetched_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+        has_website   INTEGER NOT NULL,
+        http_status   INTEGER,
+        final_url     TEXT,
+        checks        TEXT    NOT NULL,
+        raw_signals   TEXT    NOT NULL,
+        score         INTEGER,
+        confidence    TEXT    NOT NULL CHECK (confidence IN ('none', 'low', 'medium', 'high')),
+        status        TEXT    NOT NULL DEFAULT 'ok',
+        reason        TEXT,
+        manual_review INTEGER NOT NULL DEFAULT 0,
+        notes         TEXT
+      )
+    `);
+    db.exec(
+      `INSERT INTO website_audits_new (${shared.join(', ')}) SELECT ${shared.join(', ')} FROM website_audits`,
+    );
+    db.exec('DROP TABLE website_audits');
+    db.exec('ALTER TABLE website_audits_new RENAME TO website_audits');
+    db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_website_audits_company ON website_audits (company_id, fetched_at DESC)',
+    );
+  })();
+  db.exec('PRAGMA foreign_keys = ON');
+}
 
 function applyAddedColumns(db: Database.Database): void {
   for (const { table, column, definition } of ADDED_COLUMNS) {
@@ -54,6 +172,8 @@ export function initSchema(): void {
   const sql = readFileSync(SCHEMA_PATH, 'utf8');
   const db = getDb();
   db.exec(sql);
+  relaxWebsiteAuditConstraints(db);
+  relaxLeadScoreConstraints(db);
   applyAddedColumns(db);
 }
 

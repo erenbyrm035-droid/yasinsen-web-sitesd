@@ -37,6 +37,9 @@ interface Snapshot {
     social: number | null;
     location: string | null;
     phone: string | null;
+    websiteStatus: string;
+    manualReview: boolean;
+    socialStatus: string | null;
   }[];
 }
 
@@ -54,6 +57,9 @@ function toSnapshot(rows: LeadTableRow[]): Snapshot {
       social: r.socialScore,
       location: r.location,
       phone: r.phone,
+      websiteStatus: r.websiteStatus,
+      manualReview: r.manualReview,
+      socialStatus: r.socialStatus,
     })),
   };
 }
@@ -215,13 +221,39 @@ function buildMarkdown(current: Snapshot, previous: Snapshot | null): string {
     lines.push('| # | İşletme | Telefon | Konum | Website | Purchase | Önerilen hizmet |');
     lines.push('|---|---|---|---|---|---|---|');
     callList.forEach((l, i) => {
+      const websiteCell =
+        l.website === null && l.websiteStatus !== 'no_website'
+          ? '⚠️ ölçülemedi'
+          : scoreCell(l.website);
       lines.push(
         `| ${i + 1} | **${l.company}** | ${l.phone ?? '—'} | ${l.location ?? '—'} | ` +
-          `${scoreCell(l.website)} | **${scoreCell(l.purchase)}** | ${l.offer ?? '—'} |`,
+          `${websiteCell} | **${scoreCell(l.purchase)}** | ${l.offer ?? '—'} |`,
       );
     });
   }
   lines.push('');
+
+  // --- Elle incelenecekler ---------------------------------------------------
+  const manual = current.leads.filter((l) => l.manualReview);
+  if (manual.length > 0) {
+    lines.push('## Elle incelenmesi gerekenler');
+    lines.push('');
+    lines.push(
+      `${manual.length} işletmenin sitesi otomatik denetime kapalı (bot koruması ya da sunucu hatası). ` +
+        'Bu sitelere **skor verilmedi** — ölçemediğimiz için "kötü" varsaymıyoruz. ' +
+        'Aramadan önce siteyi tarayıcıda açıp bakın.',
+    );
+    lines.push('');
+    lines.push('| İşletme | Telefon | Website | Durum |');
+    lines.push('|---|---|---|---|');
+    for (const lead of manual.slice(0, 20)) {
+      lines.push(
+        `| ${lead.company} | ${lead.phone ?? '—'} | ${lead.location ?? '—'} | ${lead.websiteStatus} |`,
+      );
+    }
+    if (manual.length > 20) lines.push(`| _…ve ${manual.length - 20} tane daha_ | | | |`);
+    lines.push('');
+  }
 
   lines.push('---');
   lines.push('');

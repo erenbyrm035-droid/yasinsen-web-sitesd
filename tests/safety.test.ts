@@ -157,3 +157,47 @@ describe('Veri durustlugu', () => {
     assert.match(apolloSource, /email_not_unlocked/);
   });
 });
+
+describe('Sosyal medya kazima yasagi', () => {
+  test('Instagram/Facebook profil sayfalari icerik icin CEKILMEZ', () => {
+    // probeUrl yalnizca "bu URL 200 mu 404 mu" sorusunu sorar (HTTP durum
+    // kontrolu). Profil HTML'ini indirip icerigini ayristirmak baska sey:
+    // login duvari yuzunden zaten ise yaramaz ve platform kosullarina aykiri.
+    for (const file of SOURCE_FILES) {
+      const code = readFileSync(file, 'utf8');
+      if (/fetchPage\(\s*[`'"][^`'"]*(?:instagram|facebook|tiktok)\.com/i.test(code)) {
+        assert.fail(`${file}: sosyal medya profil sayfasi dogrudan indiriliyor`);
+      }
+      if (/graphql|__a=1|\?__d=|window\._sharedData/i.test(code)) {
+        assert.fail(`${file}: sosyal medya ic API'sine erisim izi var`);
+      }
+    }
+  });
+
+  test('arama motoru HTML kazima kodu yok — yalnizca resmi API', () => {
+    for (const file of SOURCE_FILES) {
+      const code = readFileSync(file, 'utf8');
+      // Yorum satirlarini ayikla: neden kazimadigimizi ACIKLAYAN yorumlar var.
+      const withoutComments = code
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/^\s*\/\/.*$/gm, '');
+
+      if (/https?:\/\/(?:www\.)?(?:bing|duckduckgo|google)\.[a-z.]+\/(?:search|html)/i.test(withoutComments)) {
+        assert.fail(`${file}: arama motoru sonuc sayfasi kaziniyor`);
+      }
+    }
+  });
+
+  test('dogrulanmamis sosyal profil kaydedilmez', () => {
+    const discovery = readFileSync(
+      resolve(ROOT, 'src/lib/audit/social-discovery.ts'),
+      'utf8',
+    );
+    assert.match(discovery, /MATCH_THRESHOLD/, 'dogrulama esigi tanimli olmali');
+    assert.match(
+      discovery,
+      /verdict\.score\s*<\s*MATCH_THRESHOLD/,
+      'esigin altindaki aday reddedilmeli',
+    );
+  });
+});

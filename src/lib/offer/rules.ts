@@ -27,10 +27,12 @@ export const OFFER_LABELS: Record<OfferCode, string> = {
 };
 
 export interface OfferRuleContext {
-  websiteScore: number;
+  /** null = site denetlenemedi (bot korumasi / HTTP hatasi). Sifir DEGIL. */
+  websiteScore: number | null;
   /** null = olculebilir sosyal sinyal yok. */
   socialScore: number | null;
-  digitalGap: number;
+  /** null = dijital acik hesaplanamadi. */
+  digitalGap: number | null;
   businessPotential: number;
   hasWebsite: boolean;
   hasSocialPresence: boolean;
@@ -51,6 +53,14 @@ export interface OfferRule {
 
 const socialOrZero = (ctx: OfferRuleContext) => ctx.socialScore ?? 0;
 
+/**
+ * Website skoruna dayanan kurallar yalnizca skor GERCEKTEN OLCULDUYSE
+ * calisabilir. Olculemeyen skoru 0 gibi ele almak, bot korumasi arkasindaki
+ * saglam bir siteye "website satalim" dedirtirdi.
+ */
+const webMeasured = (ctx: OfferRuleContext): ctx is OfferRuleContext & { websiteScore: number } =>
+  ctx.websiteScore !== null;
+
 export const OFFER_RULES: OfferRule[] = [
   {
     id: 'R1',
@@ -70,9 +80,21 @@ export const OFFER_RULES: OfferRule[] = [
       'İletişim bilgisi doğrulanmadan teklif üretmek anlamsız.',
   },
   {
+    id: 'R2b',
+    description: 'Dijital varlık ölçülemedi → otomatik teklif üretilmez, elle incelenmeli',
+    matches: (c) => c.websiteScore === null && c.socialScore === null,
+    offer: () => 'G',
+    rationale: () =>
+      'İşletmenin sitesi otomatik denetime kapalı (bot koruması ya da sunucu hatası) ve ' +
+      'doğrulanabilir sosyal medya profili de bulunamadı. Elimizde teklif üretecek ölçüm yok. ' +
+      'Bu lead ELLE İNCELENMELİ — siteyi tarayıcıda açıp bakmak gerekiyor. ' +
+      'Ölçemediğimiz için "kötü" varsaymıyoruz.',
+  },
+  {
     id: 'R3',
     description: 'Dijital olgunluk yüksek, boşluk düşük → büyütme hizmetleri',
-    matches: (c) => c.websiteScore >= 80 && socialOrZero(c) >= 80 && c.digitalGap < 25,
+    matches: (c) =>
+      webMeasured(c) && c.websiteScore >= 80 && socialOrZero(c) >= 80 && (c.digitalGap ?? 100) < 25,
     offer: (c) => {
       if (!c.hasBooking || !c.hasMembership) return 'D';
       if ((c.employeeCount ?? 0) >= 20) return 'E';
@@ -89,7 +111,7 @@ export const OFFER_RULES: OfferRule[] = [
   {
     id: 'R4',
     description: 'Site zayıf, sosyal güçlü → önce siteyi düzelt (dönüşüm darboğazı)',
-    matches: (c) => c.websiteScore < 55 && socialOrZero(c) >= 70,
+    matches: (c) => webMeasured(c) && c.websiteScore < 55 && socialOrZero(c) >= 70,
     offer: () => 'A',
     rationale: (c) =>
       `Sosyal medyada güçlü bir varlık var (${c.socialScore}) ama website zayıf (${c.websiteScore}). ` +
@@ -99,7 +121,7 @@ export const OFFER_RULES: OfferRule[] = [
   {
     id: 'R5',
     description: 'Site zayıf/yok, sosyal de güçlü değil → önce website',
-    matches: (c) => c.websiteScore < 55,
+    matches: (c) => webMeasured(c) && c.websiteScore < 55,
     offer: () => 'A',
     rationale: (c) =>
       c.hasWebsite
@@ -110,7 +132,7 @@ export const OFFER_RULES: OfferRule[] = [
   {
     id: 'R6',
     description: 'Site yeterli, sosyal zayıf veya yok → sosyal medya',
-    matches: (c) => c.websiteScore >= 55 && socialOrZero(c) < 50,
+    matches: (c) => webMeasured(c) && c.websiteScore >= 55 && socialOrZero(c) < 50,
     offer: () => 'C',
     rationale: (c) =>
       `Website yeterli seviyede (${c.websiteScore}) ama sosyal medya ` +
@@ -122,7 +144,7 @@ export const OFFER_RULES: OfferRule[] = [
   {
     id: 'R7',
     description: 'Site iyi ama rezervasyon/üyelik otomasyonu yok',
-    matches: (c) => c.websiteScore >= 70 && (!c.hasBooking || !c.hasMembership),
+    matches: (c) => webMeasured(c) && c.websiteScore >= 70 && (!c.hasBooking || !c.hasMembership),
     offer: () => 'D',
     rationale: (c) =>
       `Website skoru iyi (${c.websiteScore}) fakat ` +
@@ -137,7 +159,10 @@ export const OFFER_RULES: OfferRule[] = [
     matches: () => true,
     offer: () => 'B',
     rationale: (c) =>
-      `Website (${c.websiteScore}) ve sosyal medya (${c.socialScore ?? 'ölçülemedi'}) ` +
-      'her ikisi de orta seviyede. En yüksek getiri iki kanalı birlikte geliştirmekten gelir.',
+      c.websiteScore === null
+        ? `Website denetlenemedi; elde yalnızca sosyal medya ölçümü var (${c.socialScore}). ` +
+          'Site tarayıcıda kontrol edilmeden teklif kesinleştirilmemeli.'
+        : `Website (${c.websiteScore}) ve sosyal medya (${c.socialScore ?? 'ölçülemedi'}) ` +
+          'her ikisi de orta seviyede. En yüksek getiri iki kanalı birlikte geliştirmekten gelir.',
   },
 ];

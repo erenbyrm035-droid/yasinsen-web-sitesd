@@ -32,8 +32,15 @@ export interface LeadTableRow {
   /** Places kaynagindan gelir — aranacak listenin en islevsel alani. */
   phone: string | null;
   websiteScore: number | null;
+  /** 'ok' | 'no_website' | 'unreachable' | 'blocked' */
+  websiteStatus: string;
+  /** Otomatik hukum verilemedi — insan bakmali. */
+  manualReview: boolean;
+  websiteReason: string | null;
   socialScore: number | null;
   socialConfidence: string | null;
+  socialStatus: string | null;
+  socialProfile: string | null;
   purchaseScore: number | null;
   offerCode: OfferCode | null;
   offerLabel: string | null;
@@ -55,12 +62,17 @@ interface LeadTableSqlRow {
   decision_maker: string | null;
   decision_maker_title: string | null;
   website_score: number | null;
+  website_status: string | null;
+  website_reason: string | null;
+  manual_review: number | null;
   social_score: number | null;
   purchase_score: number | null;
   priority: Priority | null;
   offer_code: OfferCode | null;
   offer_label: string | null;
   social_confidence: string | null;
+  social_status: string | null;
+  social_profile: string | null;
 }
 
 /**
@@ -83,6 +95,9 @@ const LEAD_TABLE_SQL = `
     ct.full_name        AS decision_maker,
     ct.title            AS decision_maker_title,
     s.website_score     AS website_score,
+    wa.status           AS website_status,
+    wa.reason           AS website_reason,
+    wa.manual_review    AS manual_review,
     s.social_score      AS social_score,
     s.purchase_score    AS purchase_score,
     s.priority          AS priority,
@@ -92,9 +107,21 @@ const LEAD_TABLE_SQL = `
       SELECT sa.confidence FROM social_audits sa
       WHERE sa.company_id = c.id
       ORDER BY sa.score DESC NULLS LAST, sa.id DESC LIMIT 1
-    )                   AS social_confidence
+    )                   AS social_confidence,
+    (
+      SELECT sa.status FROM social_audits sa
+      WHERE sa.company_id = c.id
+      ORDER BY sa.score DESC NULLS LAST, sa.id DESC LIMIT 1
+    )                   AS social_status,
+    (
+      SELECT sa.profile_url FROM social_audits sa
+      WHERE sa.company_id = c.id
+      ORDER BY sa.score DESC NULLS LAST, sa.id DESC LIMIT 1
+    )                   AS social_profile
   FROM leads l
   JOIN companies c ON c.id = l.company_id
+  LEFT JOIN website_audits wa
+    ON wa.id = (SELECT id FROM website_audits WHERE company_id = c.id ORDER BY id DESC LIMIT 1)
   LEFT JOIN contacts ct ON ct.id = l.primary_contact_id
   LEFT JOIN lead_scores s
     ON s.id = (SELECT id FROM lead_scores WHERE lead_id = l.id ORDER BY id DESC LIMIT 1)
@@ -119,8 +146,13 @@ export function listLeadTable(): LeadTableRow[] {
     location: [r.district, r.city].filter(Boolean).join(', ') || null,
     phone: r.phone,
     websiteScore: r.website_score,
+    websiteStatus: r.website_status ?? 'ok',
+    manualReview: r.manual_review === 1,
+    websiteReason: r.website_reason,
     socialScore: r.social_score,
     socialConfidence: r.social_confidence,
+    socialStatus: r.social_status,
+    socialProfile: r.social_profile,
     purchaseScore: r.purchase_score,
     offerCode: r.offer_code,
     offerLabel: r.offer_label,

@@ -33,6 +33,8 @@ function autoAudit(score: number | null): SocialAuditResult {
     handle: 'x',
     profileUrl: 'https://instagram.com/x',
     resolved: true,
+    status: 'on_site',
+    match: { source: 'website', score: 1, signals: ['test'], query: null },
     signals: {
       linkOnSite: true,
       handleResolves: true,

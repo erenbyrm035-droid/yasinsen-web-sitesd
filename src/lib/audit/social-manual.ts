@@ -257,6 +257,13 @@ export function auditFromManualOnly(input: StoredSocialManualInput): MergedSocia
       feedEmbedOnSite: false,
       linkPlacementProminent: null,
     },
+    status: 'manual',
+    match: {
+      source: 'manual',
+      score: 1,
+      signals: ['metrikler elle girildi'],
+      query: null,
+    },
     dataAvailable: availabilityFrom(
       {
         followers: false,

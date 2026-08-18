@@ -21,10 +21,11 @@ const WEIGHTS = {
 } as const;
 
 export interface BuyingIntentInput {
-  websiteScore: number;
+  /** Denetlenemediyse null — bu durumda site kalitesine bagli bilesenler atlanir. */
+  websiteScore: number | null;
   socialScore: number | null;
   hasWebsite: boolean;
-  /** Site kayitli ama HTTP istegi basarisiz oldu. */
+  /** Site kayitli ama sunucuya hic ulasilamadi (DNS/baglanti hatasi). */
   websiteBroken: boolean;
   hasSocialPresence: boolean;
   hasPhone: boolean;
@@ -47,38 +48,47 @@ export function computeBuyingIntent(input: BuyingIntentInput): BuyingIntentResul
   const currentYear = new Date().getFullYear();
 
   // 1) Sosyalde aktif ama sitesi zayif: pazarlamaya harcama istegi kanitli.
+  const websiteMeasured = input.websiteScore !== null;
   const socialStrong = (input.socialScore ?? 0) >= 60;
-  const investedButIncomplete = socialStrong && input.websiteScore < 55;
+  const investedButIncomplete = socialStrong && websiteMeasured && input.websiteScore! < 55;
   components.push({
     key: 'investedButIncomplete',
     label: 'Pazarlamaya yatırım yapıyor, altyapı eksik',
-    value: investedButIncomplete ? 100 : socialStrong ? 40 : 20,
+    // Website kalitesi bilinmeden "altyapisi eksik" denemez.
+    value: !websiteMeasured ? null : investedButIncomplete ? 100 : socialStrong ? 40 : 20,
     weight: WEIGHTS.investedButIncomplete,
-    detail: investedButIncomplete
-      ? `Sosyal varlık güçlü (${input.socialScore}) ama website zayıf (${input.websiteScore}) — bütçe var, sonuç eksik`
-      : socialStrong
-        ? 'Sosyal varlık güçlü, website de yeterli seviyede'
-        : 'Belirgin bir dijital yatırım sinyali yok',
+    detail: !websiteMeasured
+      ? 'Website ölçülemediği için değerlendirilemedi'
+      : investedButIncomplete
+        ? `Sosyal varlık güçlü (${input.socialScore}) ama website zayıf (${input.websiteScore}) — bütçe var, sonuç eksik`
+        : socialStrong
+          ? 'Sosyal varlık güçlü, website de yeterli seviyede'
+          : 'Belirgin bir dijital yatırım sinyali yok',
   });
 
   // 2) Site var ama eskimis / hazir sablon.
   const stale = input.copyrightYear !== null && input.copyrightYear < currentYear - 1;
   const templatePlatform = input.platform !== null && /wix|squarespace|wordpress/i.test(input.platform);
   const outdated = input.hasWebsite && (stale || templatePlatform || input.websiteBroken);
+  // Site okunamadiysa eskiligi de bilinemez — ama sunucu hic yanit vermiyorsa
+  // bu zaten olculmus bir bulgudur (websiteBroken) ve degerlendirilir.
+  const outdatedMeasurable = websiteMeasured || input.websiteBroken || !input.hasWebsite;
   components.push({
     key: 'outdatedSite',
     label: 'Site eski / şablon / çalışmıyor',
-    value: outdated ? 100 : input.hasWebsite ? 25 : 0,
+    value: !outdatedMeasurable ? null : outdated ? 100 : input.hasWebsite ? 25 : 0,
     weight: WEIGHTS.outdatedSite,
-    detail: input.websiteBroken
+    detail: !outdatedMeasurable
+      ? 'Site okunamadığı için güncelliği değerlendirilemedi'
+      : input.websiteBroken
       ? 'Kayıtlı site açılmıyor — acil yenileme ihtiyacı'
       : stale
         ? `Telif yılı ${input.copyrightYear} — site uzun süredir güncellenmemiş`
         : templatePlatform
           ? `Hazır şablon altyapısı (${input.platform}) — özelleştirme ihtiyacı`
-          : input.hasWebsite
-            ? 'Site güncel görünüyor'
-            : 'Site yok',
+            : input.hasWebsite
+              ? 'Site güncel görünüyor'
+              : 'Site yok',
   });
 
   // 3) Satmaya calisiyor ama altyapisi yok: fiyat/paket yayinliyor,
@@ -87,12 +97,22 @@ export function computeBuyingIntent(input: BuyingIntentInput): BuyingIntentResul
   const booking = checkPassed(input.checks, 'booking') === true;
   const membership = checkPassed(input.checks, 'membership') === true;
   const sellsWithoutInfrastructure = pricing && !booking && !membership;
+  // Sayfa okunamadiysa "rezervasyon yok" denemez; sadece bakilamadi.
+  const infraMeasurable = websiteMeasured || !input.hasWebsite;
   components.push({
     key: 'sellsWithoutInfrastructure',
     label: 'Satış niyeti var, altyapı yok',
-    value: sellsWithoutInfrastructure ? 100 : !booking && !membership && input.hasWebsite ? 60 : 15,
+    value: !infraMeasurable
+      ? null
+      : sellsWithoutInfrastructure
+        ? 100
+        : !booking && !membership && input.hasWebsite
+          ? 60
+          : 15,
     weight: WEIGHTS.sellsWithoutInfrastructure,
-    detail: sellsWithoutInfrastructure
+    detail: !infraMeasurable
+      ? 'Sayfa okunamadığı için rezervasyon/üyelik altyapısı görülemedi'
+      : sellsWithoutInfrastructure
       ? 'Fiyat/paket yayınlanmış ama online rezervasyon ve üyelik akışı yok'
       : booking || membership
         ? 'Online rezervasyon/üyelik altyapısı mevcut'
@@ -108,11 +128,12 @@ export function computeBuyingIntent(input: BuyingIntentInput): BuyingIntentResul
   components.push({
     key: 'weakConversion',
     label: 'Dönüşüm unsurları zayıf',
-    value: weakConversion ? 100 : conversionRatio === null ? 50 : 20,
+    // Onceden olculemeyen durum 50 puan aliyordu — yani uydurma bir orta deger.
+    value: conversionRatio === null ? null : weakConversion ? 100 : 20,
     weight: WEIGHTS.weakConversion,
     detail:
       conversionRatio === null
-        ? 'Ölçülemedi (site açılmadı)'
+        ? 'Ölçülemedi — sayfa okunamadı'
         : weakConversion
           ? `Dönüşüm unsurlarının yalnızca %${Math.round(conversionRatio * 100)}'i mevcut — ${conversionCheck?.evidence}`
           : 'Dönüşüm unsurları yeterli',
@@ -133,8 +154,16 @@ export function computeBuyingIntent(input: BuyingIntentInput): BuyingIntentResul
         : 'Dijital varlık mevcut',
   });
 
-  const achievable = components.reduce((sum, c) => sum + c.weight, 0);
-  const earned = components.reduce((sum, c) => sum + (c.value / 100) * c.weight, 0);
+  // Olculemeyen bilesen (value === null) ne paya ne paydaya girer.
+  const measured = components.filter((c) => c.value !== null);
+  const achievable = measured.reduce((sum, c) => sum + c.weight, 0);
+  const earned = measured.reduce((sum, c) => sum + ((c.value as number) / 100) * c.weight, 0);
+
+  // Hicbir bilesen olculemediyse niyet tahmini de yapilamaz; notr 50 doner
+  // ve bu breakdown'da acikca gorunur (uydurma bir "yuksek niyet" uretilmez).
+  if (achievable === 0) {
+    return { score: 50, components };
+  }
 
   return { score: Math.round((earned / achievable) * 100), components };
 }

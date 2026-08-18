@@ -6,7 +6,31 @@
  */
 
 export type Confidence = 'low' | 'medium' | 'high';
-export type SocialConfidence = 'none' | Confidence;
+/** 'none' = hicbir sey olculemedi. "Kotu" degil, "bilinmiyor". */
+export type AuditConfidence = 'none' | Confidence;
+export type SocialConfidence = AuditConfidence;
+
+/**
+ * Website denetiminin ne ile karsilastigini soyler. Skorun anlamli olup
+ * olmadigi buna bakilarak anlasilir:
+ *
+ *   ok          -> gercek isletme sayfasi analiz edildi, skor gecerli
+ *   no_website  -> kayitli adres yok. Skor 0 ve bu GERCEK bir bulgudur.
+ *   unreachable -> sunucu hata dondu ya da hic yanit vermedi. Skor null.
+ *   blocked     -> bot korumasi / challenge sayfasi geldi. Skor null.
+ *   unrendered  -> sayfa geldi ama icerigi sunucudan gelmiyor (JS ile render
+ *                  edilen SPA) ya da neredeyse bos. Skor null.
+ *
+ * unreachable ve blocked durumlarinda sayfa ICERIGI ANALIZ EDILMEZ: gelen
+ * HTML isletmenin sitesi degil, guvenlik duvarinin hata sayfasidir. Onu
+ * denetlemek "siteniz kotu" hukmunu uydurmak olur.
+ */
+export type WebsiteAuditStatus =
+  | 'ok'
+  | 'no_website'
+  | 'unreachable'
+  | 'blocked'
+  | 'unrendered';
 export type Priority = 'HOT' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type LeadStatus = 'discovered' | 'analyzed' | 'scored';
 export type OfferCode = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
@@ -102,8 +126,14 @@ export interface WebsiteAuditResult {
   finalUrl: string | null;
   checks: AuditCheck[];
   rawSignals: WebsiteRawSignals;
-  score: number;
-  confidence: Confidence;
+  /** Olculemediyse null — asla "dusuk skor" ile temsil edilmez. */
+  score: number | null;
+  confidence: AuditConfidence;
+  status: WebsiteAuditStatus;
+  /** Skor neden olculemedi: gercek HTTP kodu ya da tespit edilen engel. */
+  reason: string | null;
+  /** Otomatik hukum verilemedi; insan bakmali. Lead SILINMEZ. */
+  manualReviewRequired: boolean;
   notes: string | null;
 }
 
@@ -138,6 +168,37 @@ export interface SocialAuditResult {
   /** Hicbir sinyal olculemediyse null. */
   score: number | null;
   confidence: SocialConfidence;
+  status: SocialAuditStatus;
+  /** Profil nasil bulundu ve neden bu isletmeye ait sayildi. */
+  match: SocialMatch | null;
+}
+
+/**
+ * Sosyal profilin nereden geldigi ve dogrulanip dogrulanmadigi.
+ *
+ *   on_site      -> isletmenin kendi sitesinde link veriliyor. En guclu kanit.
+ *   verified     -> web aramasiyla bulundu ve kimlik sinyalleri dogrulandi.
+ *   unverified   -> aday bulundu ama dogrulanamadi. KAYDEDILMEZ.
+ *   not_found    -> arandi, bulunamadi.
+ *   not_searched -> arama saglayicisi yapilandirilmamis.
+ *   manual       -> elle girildi.
+ */
+export type SocialAuditStatus =
+  | 'on_site'
+  | 'verified'
+  | 'unverified'
+  | 'not_found'
+  | 'not_searched'
+  | 'manual';
+
+export interface SocialMatch {
+  source: 'website' | 'search' | 'manual';
+  /** 0..1 — kimlik dogrulama guveni. Esigi gecmeyen aday kaydedilmez. */
+  score: number;
+  /** Hangi sinyaller eslesti (insan okunur, denetlenebilir). */
+  signals: string[];
+  /** Hangi arama sorgusuyla bulundu. */
+  query: string | null;
 }
 
 export interface SocialSignals {
@@ -171,17 +232,19 @@ export interface SocialDataAvailability {
 export interface ScoreComponent {
   key: string;
   label: string;
-  value: number;
+  /** null = bu bilesen olculemedi; paya da paydaya da girmez. */
+  value: number | null;
   weight: number;
   /** Puanin nereden geldigini aciklayan kisa metin. */
   detail: string;
 }
 
 export interface LeadScoreResult {
-  websiteScore: number;
+  websiteScore: number | null;
   socialScore: number | null;
   businessPotential: number;
-  digitalGap: number;
+  /** Ne website ne sosyal olculebildiyse null. */
+  digitalGap: number | null;
   estimatedBuyingIntent: number;
   purchaseScore: number;
   priority: Priority;
@@ -195,6 +258,9 @@ export interface ScoreBreakdown {
     websiteWeight: number;
     socialWeight: number;
     socialConfidence: SocialConfidence;
+    websiteConfidence: AuditConfidence;
+    /** Hicbir dijital sinyal olculemediyse true — gap null olur. */
+    unmeasurable: boolean;
     formula: string;
   };
   purchase: {
@@ -221,7 +287,8 @@ export interface OfferRecommendation {
 // ---------------------------------------------------------------------------
 
 export interface LeadAnalysisJson {
-  website_score: number;
+  /** null = website denetlenemedi (bot korumasi / HTTP hatasi). */
+  website_score: number | null;
   social_score: number | null;
   purchase_score: number;
   priority: Priority;

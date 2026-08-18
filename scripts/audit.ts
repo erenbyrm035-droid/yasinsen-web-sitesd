@@ -39,7 +39,10 @@ export async function runAudit(
 
   let withWebsite = 0;
   let withoutWebsite = 0;
+  let unmeasurable = 0;
   let socialProfiles = 0;
+  let socialViaSearch = 0;
+  let socialRejected = 0;
   let cursor = 0;
   let done = 0;
 
@@ -52,7 +55,13 @@ export async function runAudit(
       const company = companies[cursor];
       cursor += 1;
 
-      const result = await auditCompany(company.website);
+      const result = await auditCompany(company.website, {
+        name: company.name,
+        website: company.website,
+        city: company.location_city,
+        district: company.location_district,
+        phone: company.phone,
+      });
 
       insertWebsiteAudit(company.id, result.website);
       for (const social of result.social) {
@@ -62,30 +71,49 @@ export async function runAudit(
       const leadId = ensureLead(company.id);
       setLeadStatus(leadId, 'analyzed');
 
-      if (result.website.hasWebsite && result.website.httpStatus !== null) withWebsite += 1;
-      else withoutWebsite += 1;
+      if (result.website.status === 'ok') withWebsite += 1;
+      else if (result.website.status === 'no_website') withoutWebsite += 1;
+      else unmeasurable += 1;
+
       socialProfiles += result.social.length;
+      socialViaSearch += result.social.filter((s) => s.status === 'verified').length;
+      socialRejected += result.socialRejected.length;
 
       done += 1;
       const socialSummary =
         result.social.length > 0
-          ? result.social.map((s) => `${s.platform}:${s.score ?? '—'}`).join(' ')
-          : 'sosyal profil yok';
+          ? result.social
+              .map((s) => `${s.platform}:${s.score ?? '—'}${s.status === 'verified' ? '*' : ''}`)
+              .join(' ')
+          : `sosyal yok (${result.socialStatus})`;
 
-      console.log(
-        `  · [${done}/${companies.length}] ${company.name} — ` +
-          `website ${result.website.score}/100 (${result.website.confidence}) | ${socialSummary}`,
-      );
+      // Olculemeyen site "0/100" olarak yazilmaz — yanlis okumaya yol acar.
+      const websiteSummary =
+        result.website.score === null
+          ? `website ÖLÇÜLEMEDİ (${result.website.status}: ${result.website.reason})`
+          : `website ${result.website.score}/100 (${result.website.confidence})`;
+
+      console.log(`  · [${done}/${companies.length}] ${company.name} — ${websiteSummary} | ${socialSummary}`);
     }
   }
 
   await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
-  const stats = { audited: companies.length, withWebsite, withoutWebsite, socialProfiles };
+  const stats = {
+    audited: companies.length,
+    withWebsite,
+    withoutWebsite,
+    unmeasurable,
+    socialProfiles,
+    socialViaSearch,
+    socialRejected,
+  };
   finishRun(runId, stats);
   console.log(
-    `[audit] Bitti — ${companies.length} denetim, ${withWebsite} erisilebilir site, ` +
-      `${withoutWebsite} site yok/acilmadi, ${socialProfiles} sosyal profil.`,
+    `[audit] Bitti — ${companies.length} denetim: ${withWebsite} site denetlendi, ` +
+      `${withoutWebsite} sitesi yok, ${unmeasurable} ÖLÇÜLEMEDİ (elle inceleme). ` +
+      `${socialProfiles} sosyal profil (${socialViaSearch} arama ile doğrulandı, ` +
+      `${socialRejected} aday doğrulanamadığı için reddedildi).`,
   );
 
   return { audited: companies.length, withWebsite, withoutWebsite, socialProfiles };

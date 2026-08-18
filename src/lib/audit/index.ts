@@ -1,11 +1,17 @@
-import type { SocialAuditResult, WebsiteAuditResult } from '../types';
+import type { SocialAuditResult, SocialAuditStatus, WebsiteAuditResult } from '../types';
 import { fetchPage } from './fetcher';
 import { auditWebsite, auditWebsiteFromPage } from './website';
 import { auditSocial } from './social';
+import type { DiscoveryCompany } from './social-discovery';
 
 export interface CompanyAuditResult {
   website: WebsiteAuditResult;
   social: SocialAuditResult[];
+  /** Profil bulunamadiysa nedeni: arandi mi, aranamadi mi. */
+  socialStatus: SocialAuditStatus;
+  socialDetail: string;
+  /** Dogrulanamadigi icin REDDEDILEN adaylar — kaydedilmez, izlenebilir kalir. */
+  socialRejected: { url: string; score: number; reason: string }[];
 }
 
 /**
@@ -13,16 +19,39 @@ export interface CompanyAuditResult {
  * Sosyal profiller sitenin HTML'inden cikarildigi icin ikisi ayni kaynagi
  * paylasir; sayfa iki kez indirilmez.
  */
-export async function auditCompany(website: string | null): Promise<CompanyAuditResult> {
+export async function auditCompany(
+  website: string | null,
+  company?: DiscoveryCompany,
+): Promise<CompanyAuditResult> {
+  // Site yoksa bile sosyal medya araniir: "sitesi yok ama Instagram'da aktif"
+  // fitness sektorunde cok yaygin ve satis acisindan degerli bir durum.
   if (!website) {
-    return { website: await auditWebsite(null), social: [] };
+    const websiteAudit = await auditWebsite(null);
+    const social = await auditSocial({ website: null, html: null, company });
+    return {
+      website: websiteAudit,
+      social: social.audits,
+      socialStatus: social.status,
+      socialDetail: social.detail,
+      socialRejected: social.rejected,
+    };
   }
 
   const page = await fetchPage(website);
   const websiteAudit = await auditWebsiteFromPage(page);
-  const social = await auditSocial({ website, html: page.html });
 
-  return { website: websiteAudit, social };
+  // Denetim engellendiyse gelen HTML bot korumasi sayfasidir; ondan sosyal
+  // link cikarmaya calismak anlamsiz. Bu durumda arama yolu devreye girer.
+  const usableHtml = websiteAudit.status === 'ok' ? page.html : null;
+  const social = await auditSocial({ website, html: usableHtml, company });
+
+  return {
+    website: websiteAudit,
+    social: social.audits,
+    socialStatus: social.status,
+    socialDetail: social.detail,
+    socialRejected: social.rejected,
+  };
 }
 
 export { auditWebsite, auditWebsiteFromPage } from './website';

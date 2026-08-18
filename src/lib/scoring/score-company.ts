@@ -45,9 +45,17 @@ export function scoreCompany(company: CompanyRow): ScoreCompanyResult | null {
     isInstitutional: institutional,
 
     websiteScore: websiteAudit.score,
+    websiteConfidence: websiteAudit.confidence,
     hasWebsite: Boolean(company.website),
-    // Site kayitli ama istek hic tamamlanmadi -> bozuk site.
-    websiteBroken: Boolean(company.website) && websiteAudit.httpStatus === null,
+    /**
+     * "Bozuk site" yalnizca sunucu HIC yanit vermediginde soylenebilir.
+     * HTTP 403/503 dondugunde sunucu ayakta ve site muhtemelen calisiyor —
+     * bize kapali olmasi onu bozuk yapmaz.
+     */
+    websiteBroken:
+      Boolean(company.website) &&
+      websiteAudit.status === 'unreachable' &&
+      websiteAudit.httpStatus === null,
     checks: websiteAudit.checks,
     copyrightYear: websiteAudit.rawSignals.copyrightYear ?? null,
     platform: websiteAudit.rawSignals.platform ?? null,

@@ -356,3 +356,82 @@ Her lead için `src/lib/ai/reasoner.ts` şartnamedeki şekli üretir:
    promptu modele **yeni olgu, sayı veya metrik üretmeyi açıkça yasaklar** ve
    "ölçülemedi" işaretli alanlar hakkında tahmin yürütmeyi engeller. Hata
    durumunda sessizce deterministik metne düşülür.
+
+---
+
+## Ölçülemeyen veri nasıl ele alınır
+
+**Temel kural: ölçülemeyen şey puanlanmaz.** Ne sıfır, ne yüz, ne de "ortalama
+bir değer". Bileşen formülden tamamen çıkarılır ve kalan ağırlıklar 1'e
+normalize edilir.
+
+### Neden bu kural var
+
+100 lead'lik çalıştırmada bulunan gerçek hata: MACFit'in sitesi HTTP 403
+dönüyordu. Sistem Cloudflare'in "erişim engellendi" sayfasını gerçek ana sayfa
+sanıp denetlemiş ve şunu üretmişti:
+
+```
+MACFit Mall of İstanbul → website skoru 33 · güven: YÜKSEK
+  reachable ✓  kanıt: "HTTP 403"     ← kendi içinde çelişki
+```
+
+Türkiye'nin en büyük zincirinin sitesi gayet çalışıyor. Aranacak listedeki 32
+lead'in 11'i bu yanlış ölçüme dayanıyordu. O işletmeyi arayıp "sitenizde şu
+eksikler var" demek, karşı tarafın haklı olarak güvenini kaybetmesi demekti.
+
+### Uygulanışı
+
+| Durum | website_score | digital_gap | Sonuç |
+|---|---|---|---|
+| Site denetlendi | 0–100 | hesaplanır | normal |
+| **Kayıtlı site yok** | **0** | hesaplanır | gerçek bulgu — güçlü satış sinyali |
+| HTTP 4xx/5xx | **null** | null* | elle inceleme |
+| Bot koruması / challenge | **null** | null* | elle inceleme |
+| JS ile render edilen SPA | **null** | null* | elle inceleme |
+| Sunucu yanıt vermedi | **null** | null* | elle inceleme |
+
+\* Elde güvenilir (`medium`/`high`) bir sosyal ölçüm varsa gap yalnızca ondan
+hesaplanır. Otomatik sosyal denetim `low` güvenle çalıştığı için tek başına
+karar dayanağı sayılmaz.
+
+**"Website yok" ile "website ölçülemedi" ayrı şeylerdir.** Birincisi ölçülmüş
+bir bulgudur ve skoru 0'dır — hatta en net satış fırsatlarından biridir.
+İkincisi bir bilgi eksikliğidir ve skor üretmez.
+
+### digital_gap null olduğunda purchase score
+
+```
+purchase = 0.35·gap + 0.35·potansiyel + 0.30·niyet        (normal)
+purchase = 0.54·potansiyel + 0.46·niyet                    (gap ölçülemedi)
+```
+
+Ağırlıklar kalan bileşenler üzerinden yeniden normalize edilir. Lead ne dibe
+atılır ne tepeye çıkarılır — sadece bilmediğimiz bileşen hesaba katılmaz.
+
+### Güven seviyesinin etkisi
+
+`digital_gap` içinde website ve sosyal ağırlıkları güvene göre ayarlanır:
+
+| Güven | Çarpan |
+|---|---|
+| `high` | 1.0 |
+| `medium` | 0.8 |
+| `low` | 0.5 |
+| `none` | 0 (hesaba katılmaz) |
+
+Website güveni `high` olduğunda ağırlıklar eskisiyle birebir aynı kalır —
+yani doğru ölçülmüş lead'lerin skorları bu değişiklikten etkilenmez.
+
+### Buying intent bileşenleri
+
+Site okunamadığında şu bileşenler `null` döner ve normalizasyondan çıkar:
+
+- `investedButIncomplete` — site kalitesi bilinmeden "altyapısı eksik" denemez
+- `outdatedSite` — okunamayan sayfanın güncelliği bilinemez
+- `sellsWithoutInfrastructure` — "rezervasyon yok" denemez, sadece bakılamadı
+- `weakConversion` — önceden ölçülemeyen durum 50 puan alıyordu; bu uydurma
+  bir orta değerdi, kaldırıldı
+
+`activeButOffline` bileşeni ölçülmeye devam eder çünkü sitenin *varlığına*
+bakar, kalitesine değil.

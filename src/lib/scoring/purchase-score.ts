@@ -1,4 +1,12 @@
-import type { LeadScoreResult, Priority, ScoreBreakdown, SocialConfidence, Segment, AuditCheck } from '../types';
+import type {
+  AuditConfidence,
+  AuditCheck,
+  LeadScoreResult,
+  Priority,
+  ScoreBreakdown,
+  Segment,
+  SocialConfidence,
+} from '../types';
 import { computeBusinessPotential } from './business-potential';
 import { computeBuyingIntent } from './buying-intent';
 import { computeDigitalGap } from './digital-gap';
@@ -38,7 +46,9 @@ export interface LeadScoreInput {
   /** Google yorum sayisi — yalnizca Places kaynagi doldurur. */
   reviewCount?: number | null;
 
-  websiteScore: number;
+  /** Denetlenemediyse null. Sifir DEGIL — bkz. digital-gap.ts. */
+  websiteScore: number | null;
+  websiteConfidence: AuditConfidence;
   hasWebsite: boolean;
   websiteBroken: boolean;
   checks: AuditCheck[];
@@ -62,7 +72,12 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
     isInstitutional: input.isInstitutional,
   });
 
-  const gap = computeDigitalGap(input.websiteScore, input.socialScore, input.socialConfidence);
+  const gap = computeDigitalGap(
+    input.websiteScore,
+    input.socialScore,
+    input.socialConfidence,
+    input.websiteConfidence,
+  );
 
   const intent = computeBuyingIntent({
     websiteScore: input.websiteScore,
@@ -76,10 +91,27 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
     platform: input.platform,
   });
 
-  const base =
-    WEIGHTS.digitalGap * gap.gap +
-    WEIGHTS.businessPotential * business.score +
-    WEIGHTS.buyingIntent * intent.score;
+  /**
+   * Agirliklar yalnizca OLCULEBILEN bilesenler uzerinden normalize edilir.
+   *
+   * Dijital acik hesaplanamadiginda (site bot korumasi arkasinda, sosyal de
+   * yok) o bilesen formulden tamamen cikarilir; sifir sayilmaz. Kalan iki
+   * bilesenin agirligi 1'e olceklenir.
+   *
+   * Neden onemli: gap'i 0 saymak lead'i haksiz yere dibe atardi, 100 saymak
+   * ise haksiz yere tepeye. Ikisi de uydurma olurdu. Dogru cevap "bu bilesen
+   * hakkinda bir sey bilmiyoruz"tur.
+   */
+  const parts: { weight: number; value: number }[] = [
+    { weight: WEIGHTS.businessPotential, value: business.score },
+    { weight: WEIGHTS.buyingIntent, value: intent.score },
+  ];
+  if (gap.gap !== null) {
+    parts.unshift({ weight: WEIGHTS.digitalGap, value: gap.gap });
+  }
+
+  const totalWeight = parts.reduce((sum, p) => sum + p.weight, 0);
+  const base = parts.reduce((sum, p) => sum + (p.weight / totalWeight) * p.value, 0);
 
   const modifiers: ScoreBreakdown['purchase']['modifiers'] = [];
   let purchase = base;
@@ -126,7 +158,11 @@ export function computeLeadScore(input: LeadScoreInput): LeadScoreResult {
       base: Math.round(base),
       modifiers,
       formula:
-        `purchase = 0.35·gap(${gap.gap}) + 0.35·potential(${business.score}) + 0.30·intent(${intent.score}) ` +
+        (gap.gap === null
+          ? `purchase = ${(WEIGHTS.businessPotential / totalWeight).toFixed(2)}·potential(${business.score}) + ` +
+            `${(WEIGHTS.buyingIntent / totalWeight).toFixed(2)}·intent(${intent.score}) ` +
+            '— dijital açık ölçülemedi, ağırlığı diğer bileşenlere dağıtıldı '
+          : `purchase = 0.35·gap(${gap.gap}) + 0.35·potential(${business.score}) + 0.30·intent(${intent.score}) `) +
         `= ${Math.round(base)}` +
         (modifiers.length > 0
           ? ` → modifier(${modifiers.map((m) => `${m.delta > 0 ? '+' : ''}${m.delta}`).join(', ')}) → ${purchaseScore}`
