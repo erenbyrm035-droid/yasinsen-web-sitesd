@@ -19,9 +19,9 @@ on:
         required: false
         default: '100'
       source:
-        description: 'Kaynak: osm | places'
+        description: 'Kaynak: places | osm'
         required: false
-        default: 'osm'
+        default: 'places'
 
 concurrency:
   # Ayni anda iki calistirma olmasin — ikisi de veritabanina yazar.
@@ -67,7 +67,7 @@ jobs:
           npm run pipeline -- \
             --limit "${{ github.event.inputs.limit || '100' }}" \
             --city istanbul \
-            --source "${{ github.event.inputs.source || 'osm' }}" \
+            --source "${{ github.event.inputs.source || 'places' }}" \
             --concurrency 5 \
             --quiet
 

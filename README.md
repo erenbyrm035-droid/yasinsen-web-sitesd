@@ -51,16 +51,22 @@ Pipeline idempotenttir — tekrar çalıştırmak kayıt çoğaltmaz.
 
 ## Mevcut durum
 
-100 gerçek İstanbul işletmesiyle uçtan uca doğrulandı (151 saniye):
+100 gerçek İstanbul işletmesiyle uçtan uca doğrulandı.
 
-| Metrik | Değer |
-|---|---|
-| Lead | 100 |
-| Denetlenen | 100 |
-| Erişilebilir site | 35 |
-| Site yok / açılmıyor | 65 |
-| Bulunan sosyal profil | 47 |
-| Öncelik dağılımı | HIGH 10 · MEDIUM 35 · LOW 55 |
+**Kaynak Google Places'e geçirildi** — veri kalitesi kökten değişti:
+
+| Metrik | OSM | Google Places |
+|---|---|---|
+| Telefonu olan | 29 | **99** |
+| Website kayıtlı | 44 | **84** |
+| Google yorum sayısı | 0 | **100** (ortalama 393) |
+| İlçe bilgisi | ~60 | **100** |
+| Erişilebilir site | 35 | **76** |
+| Öncelik dağılımı | HIGH 10 · MEDIUM 35 · LOW 55 | **HIGH 32 · MEDIUM 63 · LOW 5** |
+
+Yorum sayısı elimizdeki en iyi gerçek müşteri hacmi sinyali: çalışan sayısını
+kimse vermiyor, ama kaç kişinin o salona gidip yorum bıraktığı doğrudan
+ölçülebiliyor. `business_potential` içinde en ağırlıklı ikinci bileşen (25).
 
 **Kalibrasyon yapıldı.** İlk çalıştırmada 100 lead'in 85'i MEDIUM çıkıyordu —
 öncelik etiketi hiçbir şey ayırt etmiyordu. Sebep: hiçbir iletişim kanalı
