@@ -41,7 +41,37 @@ if (existsSync(resolve(ROOT, 'node_modules/next'))) {
     execSync('npm install', { stdio: 'inherit' });
     ok('Kuruldu');
   } catch {
-    fail('npm install başarısız. İnternet bağlantınızı kontrol edip tekrar deneyin.');
+    /**
+     * En sik karsilasilan basarisizlik: better-sqlite3 gibi yerel (native)
+     * bir modul icin hazir ikili bulunamamasi. npm o zaman kaynaktan
+     * derlemeye calisiyor ve Python + C++ derleyicisi istiyor.
+     *
+     * Kullaniciya "internet baglantinizi kontrol edin" demek burada YANLIS
+     * yonlendirme olur — sorun ag degil, Node surumu ile paket surumunun
+     * uyusmamasi. Gercek nedeni ve cozumu soyluyoruz.
+     */
+    const nativeBuildFailed = existsSync(resolve(ROOT, 'node_modules/better-sqlite3')) &&
+      !existsSync(resolve(ROOT, 'node_modules/better-sqlite3/build'));
+
+    if (nativeBuildFailed) {
+      fail('Veritabanı modülü (better-sqlite3) kurulamadı.');
+      console.log('');
+      console.log(`    Node ${process.versions.node} için hazır ikili dosya bulunamadı ve npm`);
+      console.log('    kaynaktan derlemeye çalıştı — bunun için Python ve C++ derleyicisi gerekiyor.');
+      console.log('');
+      console.log('    \x1b[1mÇözüm (sırayla deneyin):\x1b[0m');
+      console.log('');
+      console.log('    1. Projeyi güncelleyin — büyük ihtimalle bu yeter:');
+      console.log('       \x1b[36mgit pull\x1b[0m');
+      console.log('       \x1b[36mnpm run kur\x1b[0m');
+      console.log('');
+      console.log('    2. Yine olmazsa Node 22 LTS kurun (nodejs.org → Önceki Sürümler).');
+      console.log('       Node 22 için hazır ikili her zaman mevcut, derleme gerekmez.');
+      console.log('');
+    } else {
+      fail('npm install başarısız. Yukarıdaki hata mesajına bakın.');
+      console.log('    Ağ hatasıysa tekrar deneyin: \x1b[36mnpm run kur\x1b[0m');
+    }
     blocked = true;
   }
 }
@@ -71,7 +101,9 @@ ANTHROPIC_API_KEY=
 }
 
 head('4. Veritabanı');
-try {
+if (blocked) {
+  warn('Bağımlılıklar kurulmadan veritabanı hazırlanamaz — atlandı.');
+} else try {
   mkdirSync(resolve(ROOT, 'data'), { recursive: true });
   const fresh = !existsSync(resolve(ROOT, 'data/viva.db'));
   execSync('npm run db:init', { stdio: 'pipe' });
@@ -82,7 +114,9 @@ try {
 }
 
 head('5. Kendi kendini sınama');
-try {
+if (blocked) {
+  warn('Atlandı.');
+} else try {
   execSync('npm test', { stdio: 'pipe' });
   ok('Testler geçti');
 } catch {
@@ -90,7 +124,9 @@ try {
 }
 
 head('6. Mevcut veri');
-try {
+if (blocked) {
+  warn('Atlandı.');
+} else try {
   const { default: Database } = await import('better-sqlite3');
   const db = new Database(resolve(ROOT, 'data/viva.db'), { readonly: true });
   const n = (q) => { try { return db.prepare(q).get().n; } catch { return 0; } };
